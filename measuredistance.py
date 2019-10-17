@@ -4,11 +4,16 @@ import time
 import sys
 import brickpi3
 
-scaling_factor = 360/220
+def get_motor_power(port):
+    return BP.get_motor_status(port)[1]
 
 BP = brickpi3.BrickPi3()
-BP.set_motor_power(BP.PORT_B, 40)
-BP.set_motor_power(BP.PORT_C, 40)
+BP.set_motor_power(BP.PORT_B, 15)
+BP.set_motor_power(BP.PORT_C, 15)
+
+scaling_factor = 360/220
+MM_DISTANCE = int(sys.argv[1])
+scaled_distance = MM_DISTANCE * scaling_factor
 
 encoder_b_position = 0
 encoder_c_position = 0
@@ -17,10 +22,14 @@ while True:
     encoder_c_position += BP.get_motor_encoder(BP.PORT_C)
     BP.reset_motor_encoder(BP.PORT_B)
     BP.reset_motor_encoder(BP.PORT_C)
-    if encoder_b_position > int(sys.argv[1]) * scaling_factor:
+
+    print(encoder_b_position, encoder_c_position)
+
+    if encoder_b_position > scaled_distance:
         BP.set_motor_power(BP.PORT_B, 0)
-    if encoder_c_position > int(sys.argv[1]) * scaling_factor:
+    if encoder_c_position > scaled_distance:
         BP.set_motor_power(BP.PORT_C, 0)
-    if (BP.get_motor_status(BP.PORT_B)[1] == 0 and BP.get_motor_status(BP.PORT_C)[1] == 0):
+    if (get_motor_power(BP.PORT_B) == 0 and get_motor_power(BP.PORT_C) == 0):
         break
     time.sleep(0.02)
+
