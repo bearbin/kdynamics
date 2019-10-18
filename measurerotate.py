@@ -10,6 +10,8 @@ def get_motor_power(port):
 BP = brickpi3.BrickPi3()
 BP.set_motor_power(BP.PORT_B, 15)
 BP.set_motor_power(BP.PORT_C, -15)
+BP.reset_motor_encoder(BP.PORT_B)
+BP.reset_motor_encoder(BP.PORT_C)
 
 scaling_factor = 0.99*(360/229)#ijjh*9/10
 MM_DISTANCE = int(sys.argv[1])

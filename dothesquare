@@ -1,17 +1,17 @@
 ./switchoff.py
-./measuredistance.py 200
+./measuredistance-abs.py -400
 ./switchoff.py
 ./measurerotate.py 90
 ./switchoff.py
-./measuredistance.py 200
+./measuredistance-abs.py -400
 ./switchoff.py
 ./measurerotate.py 90
 ./switchoff.py
-./measuredistance.py 200
+./measuredistance-abs.py -400
 ./switchoff.py
 ./measurerotate.py 90
 ./switchoff.py
-./measuredistance.py 200
+./measuredistance-abs.py -400
 ./switchoff.py
 ./measurerotate.py 90
 ./switchoff.py
