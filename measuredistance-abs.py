@@ -17,10 +17,9 @@ final_encoder_pos = ScalingFactors.movement * MM_DISTANCE
 #for pos in range(0, int(final_encoder_pos), 20):
 #    BP.set_motor_position(BP.PORT_B, pos)
 #    BP.set_motor_position(BP.PORT_C, pos)
-#    while BP.get_motor_encoder(BP.PORT_B) != pos and BP.get_motor_encoder(BP.PORT_C) != pos:
-#        time.sleep(0.02)
 
 BP.set_motor_position(BP.PORT_B, final_encoder_pos)
 BP.set_motor_position(BP.PORT_C, final_encoder_pos)
 
-
+# TODO: wait until finished rather than waiting a time
+time.sleep(5)
