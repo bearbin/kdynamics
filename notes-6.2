@@ -1,14 +1,32 @@
-Motor Position
+**Motor DPS (Degrees Per Second)**
 
-Power increases but velocity decreases while being held.
-
-++ PID is used if setting the position, but not power.
-
-Motor Power
-
-The power stays constant but the degrees per second / rotational velocity varies with the load placed upon the motor. A greater load results in reduced velocity.
+PID is followed.
+When a hand is applied, the power increases, putting more force on your hand.
+Velocity(dps) drops, but the acceleration increases to meet the demand.
 
 
-Motor Damage Per Strike
+**Motor Position**
 
-Power increases but velocity(dps) stays the same while being held.
+For position, PID protocol is also followed.
+
+Note that when the target is very close to the current position,
+insufficient power means that the error of 1-2 degrees can persist for some time.
+In order to fix this, the PID integral factor may be increased.
+
+Even rotating manually as fast as possible, no more than around 20% of power is
+required to match this quickly.
+
+If the hand grip is too tight to allow the wheel to rotate, the motor will
+make up the difference as soon as the hand is released.
+
+
+**Motor Power**
+
+PID is not followed.
+Target power is matched almost instantly and very precisely.
+
+When a hand is applied, the power stays constant but the degrees per second / rotational velocity
+varies with the load placed upon the motor. A greater load results in reduced velocity.
+
+Much less resistance is felt by the holding hand, as PID does not build up
+against it.
