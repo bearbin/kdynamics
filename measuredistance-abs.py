@@ -22,4 +22,4 @@ BP.set_motor_position(BP.PORT_B, final_encoder_pos)
 BP.set_motor_position(BP.PORT_C, final_encoder_pos)
 
 # TODO: wait until finished rather than waiting a time
-time.sleep(5)
+time.sleep(3)

@@ -15,9 +15,9 @@ try:
         print("note",2* power / 100)
         start_time = time.time()
         duration = 1 / (bpm / 60)
-        BP.set_motor_power(BP.PORT_C,   power/3)
+        BP.set_motor_power(BP.PORT_A,   power/3)
         time.sleep(duration * NOTE_TIME)
-        BP.set_motor_power(BP.PORT_C, 0)
+        BP.set_motor_power(BP.PORT_A, 0)
         end_time = time.time()
         time.sleep(duration - (end_time - start_time))
 

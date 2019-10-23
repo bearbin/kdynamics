@@ -2,23 +2,25 @@
 
 import time
 import sys
-import brickpi3
+from common import *
 
-def get_motor_power(port):
-    return BP.get_motor_status(port)[1]
-
-POWER = int(sys.argv[1])
 try:
-  USE_DPS = bool(sys.argv[2])
+    POWER = int(sys.argv[1])
+    try:
+        USE_DPS = bool(sys.argv[2])
+    except:
+        USE_DPS = False
+
+    BP = brickpi3.BrickPi3()
+
+    func = BP.set_motor_dps if USE_DPS else BP.set_motor_power
+
+    SPIN_FACTOR = 1.41
+    func(BP.PORT_A, POWER/(SPIN_FACTOR))
+    func(BP.PORT_B, POWER)
+    func(BP.PORT_C, -POWER)
 except:
-  USE_DPS = False
-
-BP = brickpi3.BrickPi3()
-
-func = BP.set_motor_dps if USE_DPS else BP.set_motor_power
-
-func(BP.PORT_B, POWER)
-func(BP.PORT_C, -POWER)
+    BP.reset_all()
 
 # scaling_factor = 360/220
 # MM_DISTANCE = int(sys.argv[1])
