@@ -2,4 +2,4 @@
 
 from rendering import *
 
-drawLineXY(0,0,0,40)
+drawCoordinateFrame(0)
