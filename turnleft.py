@@ -19,7 +19,7 @@ BP.set_motor_limits(BP.PORT_C, 25)
 
 final_encoder_pos = ScalingFactors.rotation * MM_DISTANCE
 
-BP.set_motor_position(BP.PORT_B, final_encoder_pos)
-BP.set_motor_position(BP.PORT_C, -final_encoder_pos)
+BP.set_motor_position(BP.PORT_B, -final_encoder_pos)
+BP.set_motor_position(BP.PORT_C, final_encoder_pos)
 
 time.sleep(2)

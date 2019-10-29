@@ -7,19 +7,14 @@ from common import *
 TARGET_DISTANCE = 300
 BASE_SPEED = 400
 
-BP.reset_all()
-
+total_reset()
 BP.set_sensor_type(SONAR_PORT, BP.SENSOR_TYPE.NXT_ULTRASONIC)
-
-BP.reset_motor_encoder(PORT_B)
-BP.reset_motor_encoder(PORT_C)
-
-set_limit_at(35)
+set_limit_at(100)
 
 try:
 
   while True:
-    reading = get_sonar() * 10 # cm -> mm
+    reading = get_sonar_mm() 
     if reading < 0:
       continue
 
