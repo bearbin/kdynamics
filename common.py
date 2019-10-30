@@ -10,8 +10,8 @@ PORT_B = BP.PORT_B
 PORT_C = BP.PORT_C
 
 class ScalingFactors:
-   movement = 360/229 
-   rotation = 360 / 229 
+   movement = 1.075 * 360 / 229 
+   rotation = 1.075 * 360 / 229
 
 def get_motor_power(BP, port):
     return BP.get_motor_status(port)[1]
@@ -29,11 +29,23 @@ def move(mm):
 
   while (abs(get_motor_position(PORT_B)) < abs(stop_threshold) and
     abs(get_motor_position(PORT_C)) < abs(stop_threshold)):
-    print(get_motor_position(PORT_B))
+    continue
 
 def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
   BP.set_motor_dps(PORT_C, speed)
+
+def turn_left(degrees):
+  final_encoder_pos = ScalingFactors.rotation * degrees
+  stop_threshold = 0.99 * final_encoder_pos
+  
+  BP.set_motor_position(PORT_B, -final_encoder_pos)
+  BP.set_motor_position(PORT_C, final_encoder_pos)
+
+
+  while (abs(get_motor_position(PORT_B)) < abs(stop_threshold) and
+    abs(get_motor_position(PORT_C)) > abs(stop_threshold)):
+    continue
 
 def set_limit_at(percentage):
   BP.set_motor_limits(PORT_B, percentage)
@@ -55,3 +67,7 @@ def total_reset():
     BP.reset_motor_encoder(PORT_C)
     BP.reset_motor_encoder(PORT_A)
     BP.reset_motor_encoder(SONAR_PORT)
+
+def reset_encoders():
+    BP.reset_motor_encoder(PORT_B)
+    BP.reset_motor_encoder(PORT_C)
