@@ -5,21 +5,25 @@ from collections import namedtuple
 STD_DEV_E = 0.05
 STD_DEV_F = 0.01
 STD_DEV_G = 0.01
+MEAN_OF_E = 0.00
+MEAN_OF_F = 0.01
+MEAN_OF_G = 0.01
 NUMBER_OF_PARTICLES = 100
 
 def _next_point_from_distance(point, distance):
-	noise_e = random.gauss(0, STD_DEV_E)
-	noise_f = random.gauss(0, STD_DEV_F)
+	noise_e = random.gauss(MEAN_OF_E, STD_DEV_E)
+	noise_f = random.gauss(MEAN_OF_F, STD_DEV_F)
 
 	return StatePoint(
 		point.x + (distance + noise_e) * math.cos(point.angle),
 		point.y + (distance + noise_e) * math.sin(point.angle),
-		point.angle + noise_f
-)
+		point.angle + noise_f,
+		point.weight
+	)
 
 def _next_point_from_angle(point, angle):
-	noise_g = random.gauss(0, STD_DEV_G)
-	return StatePoint(point.x, point.y, point.angle + angle + noise_g)
+	noise_g = random.gauss(MEAN_OF_G, STD_DEV_G)
+	return StatePoint(point.x, point.y, point.angle + angle + noise_g, point.weight)
 
 class StatePoint(namedtuple('StatePoint', ('x', 'y', 'angle', 'weight'))):
 	__slots__ = ()
@@ -29,7 +33,7 @@ class StatePoint(namedtuple('StatePoint', ('x', 'y', 'angle', 'weight'))):
 
 class PointCloud:
 	def __init__(self, x=0, y=0, angle=0, weight=1/NUMBER_OF_PARTICLES):
-		self.state_points = [StatePoint(x, y, angle)] * NUMBER_OF_PARTICLES
+		self.state_points = [StatePoint(x, y, angle, weight)] * NUMBER_OF_PARTICLES
 
 	def move(self, distance):
 		self.state_points = [
