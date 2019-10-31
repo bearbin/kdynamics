@@ -2,7 +2,7 @@
 
 import time
 import sys
-from math import atan, cos, sin, degrees, radians, sqrt
+from math import atan2, cos, sin, degrees, radians, sqrt
 from common import *
 
 def sign(number):
@@ -24,11 +24,11 @@ try:
 
     delta_y = target_y - y
     delta_x = target_x - x
+    
+    if delta_x == 0 and delta_y == 0:
+      continue
 
-    if delta_x == 0.0:
-      target_angle = 90.0 if delta_y > 0.0 else -90.0
-    else:
-      target_angle = degrees(atan(delta_y / delta_x))
+    target_angle = degrees(atan2(delta_y, delta_x))
 
     delta_angle = sign(delta_x) * (target_angle - angle)
 
