@@ -5,6 +5,9 @@ import sys
 from math import atan, cos, sin, degrees, radians, sqrt
 from common import *
 
+def sign(number):
+    return -1 if number < 0 else 1
+
 x = 0.0
 y = 0.0
 angle = 0.0
@@ -27,7 +30,7 @@ try:
     else:
       target_angle = degrees(atan(delta_y / delta_x))
 
-    delta_angle = target_angle - angle
+    delta_angle = sign(delta_x) * (target_angle - angle)
 
     print("delta y = ", delta_y)
     print("delta x = ", delta_x)
