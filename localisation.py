@@ -6,8 +6,8 @@ STD_DEV_E = 0.05
 STD_DEV_F = 0.01
 STD_DEV_G = 0.01
 MEAN_OF_E = 0.00
-MEAN_OF_F = 0.01
-MEAN_OF_G = 0.01
+MEAN_OF_F = 0.00
+MEAN_OF_G = 0.00
 NUMBER_OF_PARTICLES = 100
 
 def _next_point_from_distance(point, distance):
@@ -28,6 +28,12 @@ def _next_point_from_angle(point, angle):
 class StatePoint(namedtuple('StatePoint', ('x', 'y', 'angle', 'weight'))):
 	__slots__ = ()
 
+	def __add__(self, rhs):
+		return StatePoint(self.x + rhs.x, self.y + rhs.y, self.angle + rhs.angle, self.weight + rhs.weight)
+
+	def __mul__(self, rhs):
+		return StatePoint(self.x * rhs, self.y * rhs, self.angle, self.weight)
+
 	def __str__(self):
 		return "(%f, %f, %f)" % (self.x, self.y, self.angle)
 
@@ -46,6 +52,9 @@ class PointCloud:
 			_next_point_from_angle(point, angle)
 			for point in self.state_points
 		]
+
+	def get_mean(self):
+		return sum([point * point.weight for point in self.state_points])
 
 	def __getitem__(self, item):
 		return (self.state_points[item].x, self.state_points[item].y, self.state_points[item].angle, 1)

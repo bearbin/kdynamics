@@ -14,8 +14,18 @@ LEFT_WHEEL = PORT_C
 
 class ScalingFactors:
    movement = 1.075 * 360 / 229
-   rotation = 1.075 * 360 / 229
+   rotation = 1.13 * 360 / 229
 
+
+# LIMIT 25
+   # rotation = 1.13 * 360 / 229
+   # almost perfect
+   # almost perfect
+
+  # rotation = 1.15 * 360 / 229
+  # overrotation a bit (2cm)   
+  # overrotation a bit (2cm)   
+  # overrotation a bit (1cm)   
 def get_motor_power(BP, port):
     return BP.get_motor_status(port)[1]
 
@@ -35,20 +45,19 @@ def move(mm):
   while (abs(get_motor_position(PORT_B)) < abs(right_stop_threshold) and
     abs(get_motor_position(PORT_C)) < abs(left_stop_threshold)):
     continue
+  print("Move finished")
 
 def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
   BP.set_motor_dps(PORT_C, speed)
 
 def turn_left(degrees):
-  print("I am a silly bot turning left by: ", degrees)
+  print("Flesh bag detected at ", degrees, " degrees")
   final_encoder_pos = ScalingFactors.rotation * degrees
   stop_threshold = 0.99 * final_encoder_pos
 
   BP.set_motor_position(PORT_B, -final_encoder_pos + get_motor_position(PORT_B))
   BP.set_motor_position(PORT_C, final_encoder_pos + get_motor_position(PORT_C))
-
-
   while (abs(get_motor_position(PORT_B)) < abs(stop_threshold) and
     abs(get_motor_position(PORT_C)) > abs(stop_threshold)):
     continue
