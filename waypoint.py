@@ -12,21 +12,13 @@ x = 0.0
 y = 0.0
 angle = 0.0
 
-
-total_reset()
-
-set_limit_at(25)
-
-try:
-  while True:
-    print("Insert WX and WY")
-    [target_x, target_y] = map(float, input().split())
-
+def navigateToWaypoint(target_x, target_y):
+    global x, y, angle
     delta_y = target_y - y
     delta_x = target_x - x
-    
+
     if delta_x == 0 and delta_y == 0:
-      continue
+      return
 
     target_angle = degrees(atan2(delta_y, delta_x))
 
@@ -49,6 +41,17 @@ try:
     angle += delta_angle
     x += delta_x
     y += delta_y
+
+
+total_reset()
+
+set_limit_at(25)
+
+try:
+  while True:
+    print("Insert WX and WY")
+    [target_x, target_y] = map(float, input().split())
+    navigateToWaypoint(target_x, target_y)
 
 except KeyboardInterrupt:
   BP.reset_all()
