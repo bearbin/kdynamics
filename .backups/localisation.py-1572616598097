@@ -2,12 +2,12 @@ import math
 import random
 from collections import namedtuple
 
-STD_DEV_E = 0.15
-STD_DEV_F = 0.015
-STD_DEV_G = 0.005
+STD_DEV_E = 0.02
+STD_DEV_F = 0.004
+STD_DEV_G = 0.01
 MEAN_OF_E = 0.00
 MEAN_OF_F = 0.00
-MEAN_OF_G = 0.00
+MEAN_OF_G = 0.001
 NUMBER_OF_PARTICLES = 100
 
 def _next_point_from_distance(point, distance):
@@ -52,14 +52,9 @@ class PointCloud:
             _next_point_from_angle(point, angle)
             for point in self.state_points
         ]
-    def rotate_degrees_left(self, degrees):
-        self.rotate(-math.radians(degrees))
 
     def get_mean(self):
-        x = sum([point.x * point.weight for point in self.state_points])
-        y = sum([point.y * point.weight for point in self.state_points])
-        angle = sum([point.angle * point.weight for point in self.state_points])
-        return StatePoint(x, y, angle, 1)
+        return sum([point * point.weight for point in self.state_points])
 
     def __getitem__(self, item):
         return (self.state_points[item].x, self.state_points[item].y, self.state_points[item].angle, 1)

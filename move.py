@@ -12,3 +12,5 @@ BP.reset_motor_encoder(PORT_C)
 set_limit_at(35)
 
 move(MM_DISTANCE)
+
+print("Move complete")

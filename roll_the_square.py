@@ -5,21 +5,25 @@ from rendering import *
 from localisation import *
 from common import *
 
+reset_encoders()
 set_limit_at(25)
-drawCoordinateFrame(1)
+#drawCoordinateFrame(1)
 
-NINETY = 3.1415 / -2
 points = PointCloud(10, 50, 0)
 #print(points.get_mean())
 
-drawParticlesStateful(points)
+drawParticles(points)
 for line in range(0, 4):
     for x in range(0, 4):
         move(100)
         points.move(10)
-        drawParticlesStateful(points)
-        time.sleep(0.8)
+        resetDrawingState()
+        drawParticles(points)
+        print("The mean is: ", points.get_mean())
+        time.sleep(1)
     turn_left(90)
-    points.rotate(NINETY)
+    points.rotate_degrees_left(90)
     time.sleep(1.8)
+    resetDrawingState()
+    drawParticles(points)
 
