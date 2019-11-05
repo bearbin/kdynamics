@@ -1,0 +1,48 @@
+# 1. Minimum and Maximum Range
+
+When less than 5 cm from the wall, the sensor tends to report 6cm as the measured distance. Above 5 or 6 cm
+from the wall the measured value is correct.
+
+In free space, the measured value remains correct up to the maximum range of the sensor (255 cm). However,
+when there are obstructions or non-optimal wall textures the reading is less reliable, depending on the level
+of occlusion. Below ~100cm the sensor almost always reports a correct value however.
+
+# 2. Angular Deviation
+
+The sensor appeared to record correct values for distance at angular deviations of up to 30* from the
+perpendicular.
+
+At deviations exceeding 30* but below 45*, the sensor returned a mixture of correct distance measurements
+and what appeared to be random noise and errors, with long periods of 255 values returned.
+
+At deviations of more than 45*, the sensor did not return useful results, and instead gave spurious values.
+
+# 3. Systematic Errors
+
+The sensor did not appear to have any systematic error over the range tested (20-100cm). Although the values
+returned were 1cm below the true value, this is well within the uncertainty of the true value arising from
+deficiencies in the measurement technique (parallax etc)
+
+## Table of results
+
+ Distance From Wall | Reported Distance
+--------------------+-------------------
+                 20 | 20
+                 40 | 39
+                 60 | 59
+                 80 | 79
+                100 | 99
+
+# 4. Repeatability and Scatter
+
+The resolution of the sensor and the number of readings taken were not sufficient to determine if
+the scatter of the sensor is dependent on the distance away from the wall; in any case the level of
+scatter is extremely small and not likely to have any effect on the performance of our localisation
+system.
+
+## Table of Results
+
+ Distance From Wall | Reported Distances
+--------------------+----------------------------------------
+                 40 | 40, 39, 39, 39, 38, 39, 39, 38, 38, 39
+                100 | 98, 99, 99, 99, 98, 98, 97, 99, 99, 98
