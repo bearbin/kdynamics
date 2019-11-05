@@ -46,3 +46,20 @@ system.
 --------------------+----------------------------------------
                  40 | 40, 39, 39, 39, 38, 39, 39, 38, 38, 39
                 100 | 98, 99, 99, 99, 98, 98, 97, 99, 99, 98
+
+# 5. Subjective Analysis
+
+In the expected environment (the ~2m modified square box) with the robot making only 90* turns and avoiding obstacles by at least 5cm,
+we would expect the sonar sensor to give correct values almost 100% of the time (except when actively turning).
+
+In a more general environment with small occlusions, and non-orthagonal surfaces (or unlocked robot rotation),
+we would expect incorrect values to be returned much more frequently - of course the exact value would depend on the
+precise nature of the environment in question.
+
+In a very large empty space we would expect the ultrasonic sensor to give incorrect readings 100% of the time in
+an absolute sense (the wall is not 255cm away in this environment), however the sensor will still provide useful
+information in that the wall is more than 255cm away. If the 255 case were defined as >254cm rather than an absolute
+value then it would in fact always give correct readings.
+
+The sensor also fails in dynamic environments with other moving objects not part of the environment against which
+localisation should be performed.
