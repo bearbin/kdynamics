@@ -42,13 +42,17 @@ def move(mm):
   left_stop_threshold = 0.99 * (get_motor_position(LEFT_WHEEL) + delta_encoder)
   right_stop_threshold = 0.99 * (get_motor_position(RIGHT_WHEEL) + delta_encoder)
 
-  BP.set_motor_position(RIGHT_WHEEL, get_motor_position(RIGHT_WHEEL) + delta_encoder)
   BP.set_motor_position(LEFT_WHEEL, get_motor_position(LEFT_WHEEL) + delta_encoder)
+  BP.set_motor_position(RIGHT_WHEEL, get_motor_position(RIGHT_WHEEL) + delta_encoder)
 
   while (abs(get_motor_position(LEFT_WHEEL)) < abs(left_stop_threshold) and
     abs(get_motor_position(RIGHT_WHEEL)) < abs(right_stop_threshold)):
+    print(BP.get_motor_status(LEFT_WHEEL))
     continue
   print("Move finished")
+
+def move_cm(cm):
+  move(cm * 10)
 
 def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
@@ -56,9 +60,13 @@ def move_with_speed(speed):
 
 # Idea is that for tiny turns, we have a threshold between 1 and 3 degrees
 def threshold(degrees):
-  return max(1, min(3, 1/(math.sqrt(degrees)) * 2 * math.pi))
+  return max(1, min(3.5, 1/(math.sqrt(abs(degrees))) * 60 * math.pi))
 
 def turn_left(degrees):
+  
+  if degrees == 0:
+    return
+ 
   # -1 factor because big wheels at the front!
   print("Flesh bag detected at ", degrees, " degrees - proceeding to exterminate")
   delta_encoder = (-1.0) * ScalingFactors.rotation * degrees
@@ -74,7 +82,10 @@ def turn_left(degrees):
 
   while (abs(get_motor_position(LEFT_WHEEL) - final_left) > stop_threshold and
          abs(get_motor_position(RIGHT_WHEEL) - final_right) > stop_threshold):
+    #print(abs(get_motor_position(RIGHT_WHEEL) - final_right))
+    #print(abs(get_motor_position(RIGHT_WHEEL) - final_right))
     continue
+  print("Turn complete")
 
 def set_limit_at(percentage):
   BP.set_motor_limits(PORT_B, percentage)

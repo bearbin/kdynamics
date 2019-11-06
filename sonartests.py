@@ -12,8 +12,9 @@ def measure_sonar(expected_dist):
 
     print("got" + str(get_sonar_cm()))
     time.sleep(0.02)
+while True:
+  measure_sonar(100)
 
-measure_sonar(100)
 measure_sonar(100)
 measure_sonar(100)
 measure_sonar(100)

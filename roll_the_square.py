@@ -18,12 +18,12 @@ for line in range(0, 4):
         move(100)
         points.move(10)
         resetDrawingState()
-        drawParticles(points)
+        #drawParticles(points)
         print("The mean is: ", points.get_mean())
         time.sleep(1)  # Pause after a little step 
     turn_left(90)
     points.rotate_degrees_left(90)
     time.sleep(1.8)
     resetDrawingState()
-    drawParticles(points)
+    #drawParticles(points)
 
