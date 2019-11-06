@@ -12,6 +12,9 @@ BIG_STEP_SIZE = 1
 SMALL_STEP_SIZE = 0.5
 SCALING_FACTOR_CM = MAX_POINT_Y / COORDINATE_FRAME_CM
 
+DRAW_OFFSET_X = 10
+DRAW_OFFSET_Y = 50
+
 state = []
 
 def drawLineTupleRaw(line):
@@ -31,7 +34,7 @@ def drawParticlesRaw(particles):
 
 # [(x, y, theta, weight)]
 def drawParticles(particles):
-    drawParticlesRaw(list(map(lambda x: (x[0] * SCALING_FACTOR_CM, x[1] * SCALING_FACTOR_CM, x[2], x[3]), particles)))
+    drawParticlesRaw(list(map(lambda x: ((x[0]+DRAW_OFFSET_X) * SCALING_FACTOR_CM, (-x[1]+DRAW_OFFSET_Y) * SCALING_FACTOR_CM, x[2], x[3]), particles)))
 
 
 

@@ -53,7 +53,7 @@ class PointCloud:
             for point in self.state_points
         ]
     def rotate_degrees_left(self, degrees):
-        self.rotate(-math.radians(degrees))
+        self.rotate(math.radians(degrees))
 
     def get_mean(self):
         x = sum([point.x * point.weight for point in self.state_points])

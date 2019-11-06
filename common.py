@@ -1,6 +1,7 @@
 import time
 import sys
 import brickpi3
+import math
 from rendering import *
 
 BP = brickpi3.BrickPi3()
@@ -38,14 +39,14 @@ def move(mm):
   # -1 factor because big wheels at the front!
   print("distance = ", mm)
   delta_encoder = (-1.0) * ScalingFactors.movement * mm
-  left_stop_threshold = 0.99 * (delta_encoder + get_motor_position(PORT_B))
-  right_stop_threshold = 0.99 * (delta_encoder + get_motor_position(PORT_C))
+  left_stop_threshold = 0.99 * (get_motor_position(LEFT_WHEEL) + delta_encoder)
+  right_stop_threshold = 0.99 * (get_motor_position(RIGHT_WHEEL) + delta_encoder)
 
-  BP.set_motor_position(PORT_B, delta_encoder + get_motor_position(PORT_B))
-  BP.set_motor_position(PORT_C, delta_encoder + get_motor_position(PORT_C))
+  BP.set_motor_position(RIGHT_WHEEL, get_motor_position(RIGHT_WHEEL) + delta_encoder)
+  BP.set_motor_position(LEFT_WHEEL, get_motor_position(LEFT_WHEEL) + delta_encoder)
 
-  while (abs(get_motor_position(PORT_B)) < abs(right_stop_threshold) and
-    abs(get_motor_position(PORT_C)) < abs(left_stop_threshold)):
+  while (abs(get_motor_position(LEFT_WHEEL)) < abs(left_stop_threshold) and
+    abs(get_motor_position(RIGHT_WHEEL)) < abs(right_stop_threshold)):
     continue
   print("Move finished")
 
@@ -53,15 +54,26 @@ def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
   BP.set_motor_dps(PORT_C, speed)
 
-def turn_left(degrees):
-  print("Flesh bag detected at ", degrees, " degrees")
-  final_encoder_pos = ScalingFactors.rotation * degrees
-  stop_threshold = 0.99 * final_encoder_pos
+# Idea is that for tiny turns, we have a threshold between 1 and 3 degrees
+def threshold(degrees):
+  return max(1, min(3, 1/(math.sqrt(degrees)) * 2 * math.pi))
 
-  BP.set_motor_position(PORT_B, -final_encoder_pos + get_motor_position(PORT_B))
-  BP.set_motor_position(PORT_C, final_encoder_pos + get_motor_position(PORT_C))
-  while (abs(get_motor_position(PORT_B)) > abs(stop_threshold) and
-    abs(get_motor_position(PORT_C)) < abs(stop_threshold)):
+def turn_left(degrees):
+  # -1 factor because big wheels at the front!
+  print("Flesh bag detected at ", degrees, " degrees - proceeding to exterminate")
+  delta_encoder = (-1.0) * ScalingFactors.rotation * degrees
+
+  final_left =  (get_motor_position(LEFT_WHEEL) - delta_encoder)
+  final_right  =  (get_motor_position(RIGHT_WHEEL) + delta_encoder)
+
+  stop_threshold = threshold(degrees)
+  print(stop_threshold)
+
+  BP.set_motor_position(LEFT_WHEEL, final_left)
+  BP.set_motor_position(RIGHT_WHEEL, final_right)
+
+  while (abs(get_motor_position(LEFT_WHEEL) - final_left) > stop_threshold and
+         abs(get_motor_position(RIGHT_WHEEL) - final_right) > stop_threshold):
     continue
 
 def set_limit_at(percentage):
