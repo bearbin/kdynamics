@@ -47,7 +47,6 @@ def move(mm):
 
   while (abs(get_motor_position(LEFT_WHEEL)) < abs(left_stop_threshold) and
     abs(get_motor_position(RIGHT_WHEEL)) < abs(right_stop_threshold)):
-    print(BP.get_motor_status(LEFT_WHEEL))
     continue
   print("Move finished")
 
