@@ -15,8 +15,8 @@ RIGHT_WHEEL = PORT_B
 LEFT_WHEEL = PORT_C
 
 class ScalingFactors:
-   movement = 1.0 * 360 / 229
-   rotation = 1.13 * 360 / 229
+   movement = 1.11 * 360 / 229
+   rotation = 1.09 * 360 / 229
 
 
 # LIMIT 25

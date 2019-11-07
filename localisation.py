@@ -2,9 +2,9 @@ import math
 import random
 from collections import namedtuple
 
-STD_DEV_E = 0.15
-STD_DEV_F = 0.015
-STD_DEV_G = 0.005
+STD_DEV_E = 0.16
+STD_DEV_F = 0.02
+STD_DEV_G = 0.01
 MEAN_OF_E = 0.00
 MEAN_OF_F = 0.00
 MEAN_OF_G = 0.00

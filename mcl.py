@@ -33,5 +33,6 @@ def find_closest_wall(float x, float y, float theta):
 
 
 def calculate_likelihood(float x, float y, float theta, float z):
-  continue
+  m = find_closest_wall(x, y, theta)
+  print m
 
