@@ -72,6 +72,25 @@ class PointCloud:
         angle = sum([point.angle * point.weight for point in self.state_points])
         return StatePoint(x, y, normalise_rads(angle), 1)
 
+    def normalise_weights(self):
+        total = sum([point.weight for point in self.state_points])
+        self.state_points = map(lambda point: StatePoint(p.x, p.y, p.angle, p.weight / total), self.state_points)
+
+    def _gen_cumulative_weights(self):
+        cumulativepoints = []
+        total = 0
+	for point in self.state_points:
+            total += point.weight
+            cumulativepoints.append(StatePoint(chosenpoint.x, chosenpoint.y, chosenpoint.angle, total))
+
+    def resample(self):
+        cumpoints = self._gen_cumulative_weights()
+        self.state_points = []
+        for i in range(NUMBER_OF_PARTICLES):
+            position = random.random()
+            chosenpoint = next(point for point in cumpoints where point.weight > position)
+            self.state_points.append(StatePoint(chosenpoint.x, chosenpoint.y, chosenpoint.angle, 1 / NUMBER_OF_PARTICLES))
+
     def __getitem__(self, item):
         return (self.state_points[item].x, self.state_points[item].y, self.state_points[item].angle, 1)
 
