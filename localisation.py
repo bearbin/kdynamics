@@ -25,16 +25,29 @@ def _next_point_from_angle(point, angle):
     noise_g = random.gauss(MEAN_OF_G, STD_DEV_G)
     return StatePoint(point.x, point.y, normalise_rads(point.angle + angle + noise_g), point.weight)
 
+def _sensor_fusion_of(point, reading):
+    return point
+
+def _normalise_point_weights(points):
+    assert(len(points) == NUMBER_OF_PARTICLES)
+
+    total = sum([point.weight for point in points])
+    return map(lambda point: StatePoint(p.x, p.y, p.angle, p.weight / total), points)
+
+def _resample_points(points):
+    cumpoints = itertools.accumulate(points, lambda lhs, rhs: lhs.weight + rhs.weight)
+    resampled = []
+
+    for i in range(NUMBER_OF_PARTICLES):
+        position = random.random()
+        chosen = next(point for point in cumpoints if point.weight > position)
+        resampled.append(StatePoint(chosen.x, chosen.y, chosen.angle, 1 / NUMBER_OF_PARTICLES))
+
 def normalise_rads(angle):
+  # Start with point at 0,0
+  # Move point some distance at angle theta_i for all thetas
+  # At the end, calculate the angle the point is at, this is the average
   return angle
-  #return math.atan2(math.sin(angle), math.cos(angle))
-
-  #angle = angle % (2 * math.pi)
-  #angle = (angle + (2 * math.pi)) % (2 * math.pi)
-  #if (angle > math.pi):
-   #angle -= (2 * math.pi) 
-
-  #return angle
 
 class StatePoint(namedtuple('StatePoint', ('x', 'y', 'angle', 'weight'))):
     __slots__ = ()
@@ -49,7 +62,7 @@ class StatePoint(namedtuple('StatePoint', ('x', 'y', 'angle', 'weight'))):
         return "(%f, %f, %f)" % (self.x, self.y, self.angle)
 
 class PointCloud:
-    def __init__(self, x=0, y=0, angle=0, weight=1/NUMBER_OF_PARTICLES):
+    def __init__(self, x=0, y=0, angle=0, weight=1 / NUMBER_OF_PARTICLES):
         self.state_points = [StatePoint(x, y, normalise_rads(angle), weight)] * NUMBER_OF_PARTICLES
 
     def move(self, distance):
@@ -63,33 +76,19 @@ class PointCloud:
             _next_point_from_angle(point, angle)
             for point in self.state_points
         ]
+
     def rotate_degrees_left(self, degrees):
         self.rotate(math.radians(degrees))
+
+    def fuse_sonar(self, reading):
+        integrated = [_sensor_fusion_of(point, reading) for point in self.state_points]
+        self.state_points = _resample_points(_normalise_point_weights(integrated))
 
     def get_mean(self):
         x = sum([point.x * point.weight for point in self.state_points])
         y = sum([point.y * point.weight for point in self.state_points])
         angle = sum([point.angle * point.weight for point in self.state_points])
         return StatePoint(x, y, normalise_rads(angle), 1)
-
-    def normalise_weights(self):
-        total = sum([point.weight for point in self.state_points])
-        self.state_points = map(lambda point: StatePoint(p.x, p.y, p.angle, p.weight / total), self.state_points)
-
-    def _gen_cumulative_weights(self):
-        cumulativepoints = []
-        total = 0
-	for point in self.state_points:
-            total += point.weight
-            cumulativepoints.append(StatePoint(chosenpoint.x, chosenpoint.y, chosenpoint.angle, total))
-
-    def resample(self):
-        cumpoints = self._gen_cumulative_weights()
-        self.state_points = []
-        for i in range(NUMBER_OF_PARTICLES):
-            position = random.random()
-            chosenpoint = next(point for point in cumpoints where point.weight > position)
-            self.state_points.append(StatePoint(chosenpoint.x, chosenpoint.y, chosenpoint.angle, 1 / NUMBER_OF_PARTICLES))
 
     def __getitem__(self, item):
         return (self.state_points[item].x, self.state_points[item].y, self.state_points[item].angle, 1)
