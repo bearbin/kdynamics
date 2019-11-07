@@ -3,7 +3,7 @@
 import sys
 from common import *
 from robomap import *
-from math import cos, sin, radians
+from math import cos, sin, radians, acos, sqrt
 
 reset_encoders()
 
@@ -48,6 +48,12 @@ def calculate_pz(m, z):
 
   gaussian = math.exp((-(z-m)**2) / (2 * (sigma ** 2)))
   return gaussian + k
+
+def is_incidence_angle_acceptable(wall, theta):
+  (ax, ay, bx, by) = wall
+  numerator = cos(theta) * (ay - by) + sin(theta) * (bx - ax)
+  denominator = sqrt((ay - by)**2 + (bx - ax)**2)
+  return acos(numerator / denominator) <= radians(45)
 
 def calculate_likelihood(x, y, degrees, z):
   (_, m) = find_closest_wall(x, y, radians(degrees))
