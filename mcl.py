@@ -17,7 +17,7 @@ def get_dist_to_wall(x, y, theta, wall):
   denominator = ((by - ay) * cos(theta) - (bx - ax) * sin(theta))
   dist = numerator / denominator if not denominator == 0 else -1
 
-  print("The wall is ", wall, " with distance ", dist)
+  #print("The wall is ", wall, " with distance ", dist)
   return dist
 
 def intersects_wall(x, y, wall): 
@@ -41,7 +41,16 @@ def find_closest_wall(x, y, theta):
   # Return wall with min distance m
   return min(filtered_wms, key = lambda wm: wm[0])
 
-def calculate_likelihood(x, y, degrees, z):
-  m = find_closest_wall(x, y, radians(degrees))
-  print(m)
+def calculate_pz(m, z):
+  sigma = 2.5
+  pre_norm_factor = 0.5
+  k = 0.04
 
+  gaussian = math.exp((-(z-m)**2) / (2 * (sigma ** 2)))
+  return gaussian + k
+
+def calculate_likelihood(x, y, degrees, z):
+  (_, m) = find_closest_wall(x, y, radians(degrees))
+  pz = calculate_pz(m, z) 
+  print(pz)
+ 
