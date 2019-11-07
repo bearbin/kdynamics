@@ -63,3 +63,7 @@ value then it would in fact always give correct readings.
 
 The sensor also fails in dynamic environments with other moving objects not part of the environment against which
 localisation should be performed.
+
+There are also conditions in which the sonar sensor or the BrickPi firmware has ended up in an invalid state, in which
+case the output will always be incorrect. Additionally, moving the sensor during a reading has a chance of corrupting
+the reading.
