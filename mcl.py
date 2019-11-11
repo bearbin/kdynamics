@@ -3,11 +3,12 @@
 import sys
 from common import *
 from robomap import *
-from math import cos, sin, radians, acos, sqrt
+from math import cos, sin, radians, acos, sqrt, hypot
 
-reset_encoders()
-
-set_limit_at(35)
+STD_DEV = 2.5
+PRE_NORM_FACTOR = 0.5
+ROBUSTNESS_K = 0.04
+MAX_SENSIBLE_SONAR_ANGLE = radians(45)
 
 # gets distance to wall
 def get_dist_to_wall(x, y, theta, wall):  
@@ -21,11 +22,12 @@ def get_dist_to_wall(x, y, theta, wall):
   return dist
 
 def intersects_wall(x, y, wall): 
+  u = 0.01
   (ax, ay, bx, by) = wall
-  left_x = min(ax, bx)
-  right_x = max(ax, bx)
-  top_y = max(ay, by)
-  bottom_y = min(ay, by)
+  left_x = min(ax, bx) - u
+  right_x = max(ax, bx) + u
+  top_y = max(ay, by) + u
+  bottom_y = min(ay, by) - u
 
   return left_x <= x and x <= right_x and bottom_y <= y and y <= top_y
 
@@ -38,25 +40,27 @@ def find_closest_wall(x, y, theta):
   # Filter out walls behind or to the side of us
   filtered_wms = filter(lambda wm: wm[1] >= 0 and intersects_wall(x + wm[1] * cos(theta), y + wm[1] * sin(theta), wm[0]), wms) 
 
+  l = list(filtered_wms)
+
+  closest_wall_and_distance = min(l, key = lambda wm: wm[1])
+
   # Return wall with min distance m
-  return min(filtered_wms, key = lambda wm: wm[0])
+  return closest_wall_and_distance
 
 def calculate_pz(m, z):
-  sigma = 2.5
-  pre_norm_factor = 0.5
-  k = 0.04
-
-  gaussian = math.exp((-(z-m)**2) / (2 * (sigma ** 2)))
-  return gaussian + k
+  gaussian = math.exp((-(z-m)**2) / (2 * (STD_DEV ** 2)))
+  return gaussian + ROBUSTNESS_K 
 
 def is_incidence_angle_acceptable(wall, theta):
   (ax, ay, bx, by) = wall
-  numerator = cos(theta) * (ay - by) + sin(theta) * (bx - ax)
-  denominator = sqrt((ay - by)**2 + (bx - ax)**2)
-  return acos(numerator / denominator) <= radians(45)
+  dy = ay - by
+  dx = bx - ax
+  numerator = cos(theta) * dy + sin(theta) * dx
+  denominator = hypot(dy, dx)                          # sqrt((ay - by)**2 + (bx - ax)**2)
+  return acos(numerator / denominator) <= MAX_SENSIBLE_SONAR_ANGLE
 
 def calculate_likelihood(x, y, degrees, z):
   (_, m) = find_closest_wall(x, y, radians(degrees))
   pz = calculate_pz(m, z) 
-  print(pz)
+  return pz
  

@@ -1,5 +1,6 @@
 import time
 import sys
+# import brickpi333 as brickpi3
 import brickpi3
 import math
 from rendering import *
@@ -8,6 +9,7 @@ BP = brickpi3.BrickPi3()
 
 SONAR_PORT = BP.PORT_1
 SONAR_INITIALISED = False
+
 PORT_A = BP.PORT_A
 PORT_B = BP.PORT_B
 PORT_C = BP.PORT_C
@@ -97,6 +99,7 @@ def set_sonar_sensor():
   SONAR_INITIALISED = True
 
 def get_sonar_cm():
+  global SONAR_INITIALISED
   if not SONAR_INITIALISED:
     set_sonar_sensor()
     time.sleep(0.02)

@@ -1,6 +1,9 @@
 import math
 import random
+import itertools
 from collections import namedtuple
+
+import mcl
 
 STD_DEV_E = 0.16
 STD_DEV_F = 0.02
@@ -26,22 +29,35 @@ def _next_point_from_angle(point, angle):
     return StatePoint(point.x, point.y, normalise_rads(point.angle + angle + noise_g), point.weight)
 
 def _sensor_fusion_of(point, reading):
-    return point
+    new_weight = mcl.calculate_likelihood(point.x, point.y, math.degrees(point.angle), reading)
+    return StatePoint(point.x, point.y, point.angle, new_weight)
 
 def _normalise_point_weights(points):
     assert(len(points) == NUMBER_OF_PARTICLES)
 
     total = sum([point.weight for point in points])
-    return map(lambda point: StatePoint(p.x, p.y, p.angle, p.weight / total), points)
+    return map(lambda p: StatePoint(p.x, p.y, p.angle, p.weight / total), points)
 
 def _resample_points(points):
-    cumpoints = itertools.accumulate(points, lambda lhs, rhs: lhs.weight + rhs.weight)
+    pts = list(points)
+    c = 0
+    cumulative_points = []
+    for point in pts:
+        c += point.weight
+        cumulative_points.append((point, c))
+    assert(abs(1- c) < 0.0000000001)
+
+#    cumulative_points = itertools.accumulate(pts, lambda lhs, rhs: lhs.weight + rhs.weight)
+
     resampled = []
+
 
     for i in range(NUMBER_OF_PARTICLES):
         position = random.random()
-        chosen = next(point for point in cumpoints if point.weight > position)
+        chosen = next(point for point in cumulative_points if point[1] > position)[0]
         resampled.append(StatePoint(chosen.x, chosen.y, chosen.angle, 1 / NUMBER_OF_PARTICLES))
+    
+    return resampled
 
 def normalise_rads(angle):
   # Start with point at 0,0
