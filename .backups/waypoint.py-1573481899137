@@ -35,7 +35,7 @@ y_cm = INITIAL_Y
 angle = INITIAL_ANGLE
 points = PointCloud(x_cm, y_cm, angle)
 
-
+drawParticles(points)
 def get_sonar_reading():
   x = -1
   while x == 255 or x < 0:
@@ -99,11 +99,8 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     print()
     print("Performing MCL resampling")
 
-    BP.reset_all()
-
     sonar_reading = get_sonar_reading()
-    for i in range(0,100):
-        print("My sonar reading is ", get_sonar_reading())    
+    print("My sonar reading is ", sonar_reading)    
 
     points.fuse_sonar(sonar_reading)
     new_mean = points.get_mean()
@@ -115,8 +112,7 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     print("x = ", x_cm)
     print("y = ", y_cm)
     print("angle = ", angle)
-    drawParticlesStateful(points)
-    time.sleep(15)
+    drawParticles(points)
 
 
 drawCoordinateFrame(1)
@@ -129,8 +125,7 @@ try:
   while i < 9:
     # print("Insert WX and WY")
     # [target_x, target_y] = map(float, input().split())
-    print(points.get_mean())
-    
+   #  input()
     [target_x, target_y] = map(lambda x: x / 100, WAYPOINTS[i])
     i = (i + 1) # % len(WAYPOINTS) 
     navigateToWaypoint(target_x, target_y)

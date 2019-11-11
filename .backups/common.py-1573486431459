@@ -18,7 +18,7 @@ LEFT_WHEEL = PORT_C
 
 class ScalingFactors:
    movement = 1.11 * 360 / 229
-   rotation = 1.12 * 360 / 229
+   rotation = 1.13 * 360 / 229
 
 
 # LIMIT 25
@@ -90,7 +90,7 @@ def turn_left(degrees):
 
 def set_limit_at(percentage):
   BP.set_motor_limits(PORT_B, percentage)
-  BP.set_motor_limits(LEFT_WHEEL, percentage)
+  BP.set_motor_limits(PORT_C, percentage)
 
 def set_sonar_sensor():
   global SONAR_INITIALISED

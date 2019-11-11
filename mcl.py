@@ -22,7 +22,7 @@ def get_dist_to_wall(x, y, theta, wall):
   return dist
 
 def intersects_wall(x, y, wall): 
-  u = 0.01
+  u = 0.02
   (ax, ay, bx, by) = wall
   left_x = min(ax, bx) - u
   right_x = max(ax, bx) + u
@@ -41,8 +41,10 @@ def find_closest_wall(x, y, theta):
   filtered_wms = filter(lambda wm: wm[1] >= 0 and intersects_wall(x + wm[1] * cos(theta), y + wm[1] * sin(theta), wm[0]), wms) 
 
   l = list(filtered_wms)
-
+  if len(l) <= 0:
+    return ((), 10000000)
   closest_wall_and_distance = min(l, key = lambda wm: wm[1])
+
 
   # Return wall with min distance m
   return closest_wall_and_distance

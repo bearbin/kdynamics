@@ -99,11 +99,8 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     print()
     print("Performing MCL resampling")
 
-    BP.reset_all()
-
     sonar_reading = get_sonar_reading()
-    for i in range(0,100):
-        print("My sonar reading is ", get_sonar_reading())    
+    print("My sonar reading is ", sonar_reading)    
 
     points.fuse_sonar(sonar_reading)
     new_mean = points.get_mean()
@@ -116,7 +113,6 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     print("y = ", y_cm)
     print("angle = ", angle)
     drawParticlesStateful(points)
-    time.sleep(15)
 
 
 drawCoordinateFrame(1)

@@ -5,9 +5,9 @@ from collections import namedtuple
 
 import mcl
 
-STD_DEV_E = 0.2
-STD_DEV_F = 0.15
-STD_DEV_G = 0.1
+STD_DEV_E = 0.16
+STD_DEV_F = 0.1
+STD_DEV_G = 0.02
 MEAN_OF_E = 0.00
 MEAN_OF_F = 0.00
 MEAN_OF_G = 0.00
