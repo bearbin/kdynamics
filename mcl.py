@@ -21,15 +21,13 @@ def get_dist_to_wall(x, y, theta, wall):
   #print("The wall is ", wall, " with distance ", dist)
   return dist
 
-def intersects_wall(x, y, wall): 
-  u = 0.02
-  (ax, ay, bx, by) = wall
-  left_x = min(ax, bx) - u
-  right_x = max(ax, bx) + u
-  top_y = max(ay, by) + u
-  bottom_y = min(ay, by) - u
-
-  return left_x <= x and x <= right_x and bottom_y <= y and y <= top_y
+def intersects_wall(x, y, wall):
+    u = 0.02
+    (ax, ay, bx, by) = wall
+    vx = bx - ax
+    vy = by - ay
+    distance = abs((vy * x) - (vx * y) + (bx * y) - (by * x)) / math.sqrt((vy ** 2) + (vx ** 2))
+    return distance < u
 
 def find_closest_wall(x, y, theta):
   mymap = Map.draw_robot_wars_map()
