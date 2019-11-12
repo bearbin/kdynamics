@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import math
 import random
 import itertools
@@ -36,27 +38,17 @@ def _normalise_point_weights(points):
     assert(len(points) == NUMBER_OF_PARTICLES)
 
     total = sum([point.weight for point in points])
-    return map(lambda p: StatePoint(p.x, p.y, p.angle, p.weight / total), points)
+    return [StatePoint(p.x, p.y, p.angle, p.weight / total) for p in points]
 
 def _resample_points(points):
-    pts = list(points)
-    c = 0
-    cumulative_points = []
-    for point in pts:
-        c += point.weight
-        cumulative_points.append((point, c))
-    assert(abs(1- c) < 0.0000000001)
-
-#    cumulative_points = itertools.accumulate(pts, lambda lhs, rhs: lhs.weight + rhs.weight)
+    cumulative_points = list(itertools.accumulate(points, lambda lhs, rhs: StatePoint(lhs.x, lhs.y, lhs.angle, lhs.weight + rhs.weight)))
 
     resampled = []
-
-
     for i in range(NUMBER_OF_PARTICLES):
         position = random.random()
-        chosen = next(point for point in cumulative_points if point[1] > position)[0]
+        chosen = next(point for point in cumulative_points if point.weight > position)
         resampled.append(StatePoint(chosen.x, chosen.y, chosen.angle, 1 / NUMBER_OF_PARTICLES))
-    
+
     return resampled
 
 def normalise_rads(angle):

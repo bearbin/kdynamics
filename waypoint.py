@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import time
-import sys
-from math import atan2, cos, sin, degrees, radians, sqrt, hypot
-from common import *
-from localisation import *
-from mcl import *
+import common
+import mcl
+
+from localisation import PointCloud
 from rendering import *
+from math import atan2, cos, sin, degrees, radians, sqrt, hypot
 
 WAYPOINTS = [
 [84,30],
@@ -35,23 +35,15 @@ y_cm = INITIAL_Y
 angle = INITIAL_ANGLE
 points = PointCloud(x_cm, y_cm, angle)
 
-
-def get_sonar_reading():
-  x = -1
-  while x == 255 or x < 0:
-    x = get_sonar_cm()
-  return x
-
 def normalise_rads(angle):
   return atan2(sin(angle), cos(angle))
 
 def navigateToWaypoint(target_x_metres, target_y_metres):
     global x_cm, y_cm, angle
 
-
     target_x_cm = target_x_metres * 100
-    target_y_cm = target_y_metres * 100   
-    
+    target_y_cm = target_y_metres * 100
+
     delta_y = target_y_cm - y_cm
     delta_x = target_x_cm - x_cm
 
@@ -75,14 +67,14 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     print("Final absolute angle I need to get to = ", target_angle)
     print("My current absolute angle = ", angle)
 
-    turn_left(delta_angle)
+    common.turn_left(delta_angle)
     points.rotate_degrees_left(delta_angle)
 
     #time.sleep(2)
 
     distance = hypot(delta_x, delta_y)
     print("Distance I need to travel = ", distance)
-    move_cm(distance)
+    common.move_cm(distance)
     points.move(distance)
 
     #time.sleep(1)
@@ -99,11 +91,8 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     print()
     print("Performing MCL resampling")
 
-    BP.reset_all()
-
-    sonar_reading = get_sonar_reading()
-    for i in range(0,100):
-        print("My sonar reading is ", get_sonar_reading())    
+    sonar_reading = common.get_sonar_cm()
+    print("My sonar reading is ", sonar_reading)
 
     points.fuse_sonar(sonar_reading)
     new_mean = points.get_mean()
@@ -116,25 +105,20 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     print("y = ", y_cm)
     print("angle = ", angle)
     drawParticlesStateful(points)
-    time.sleep(15)
-
+#    time.sleep(15)
 
 drawCoordinateFrame(1)
 
-total_reset()
-
-set_limit_at(25)
 i = 0
 try:
   while i < 9:
     # print("Insert WX and WY")
     # [target_x, target_y] = map(float, input().split())
     print(points.get_mean())
-    
-    [target_x, target_y] = map(lambda x: x / 100, WAYPOINTS[i])
-    i = (i + 1) # % len(WAYPOINTS) 
-    navigateToWaypoint(target_x, target_y)
 
-except KeyboardInterrupt:
-  BP.reset_all()
+    [target_x, target_y] = map(lambda x: x / 100, WAYPOINTS[i])
+    i = (i + 1) # % len(WAYPOINTS)
+    navigateToWaypoint(target_x, target_y)
+finally:
+  common.total_reset()
 
