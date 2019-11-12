@@ -15,7 +15,7 @@ LEFT_WHEEL = PORT_C
 
 class ScalingFactors:
    movement = 1.11 * 360 / 229
-   rotation = 1.09 * 360 / 229
+   rotation = 1.03 * 360 / 229
 
 
 # LIMIT 25
@@ -148,7 +148,9 @@ def _set_sonar_sensor():
 def get_sonar_cm():
   while True:
     try:
-      return BP.get_sensor(SONAR_PORT)
+      measurements = [BP.get_sensor(SONAR_PORT) for i in range(5)]
+      measurements.sort()
+      return measurements[2] # Return the median distance
     except (IOError, brickpi3.SensorError):
       _set_sonar_sensor()
 
