@@ -7,9 +7,9 @@ from collections import namedtuple
 
 import mcl
 
-STD_DEV_E = 0.2
-STD_DEV_F = 0.15
-STD_DEV_G = 0.1
+STD_DEV_E = 0.04
+STD_DEV_F = 0.04
+STD_DEV_G = 0.02
 MEAN_OF_E = 0.00
 MEAN_OF_F = 0.00
 MEAN_OF_G = 0.00
@@ -41,7 +41,7 @@ def _normalise_point_weights(points):
     return [StatePoint(p.x, p.y, p.angle, p.weight / total) for p in points]
 
 def _resample_points(points):
-    cumulative_points = list(itertools.accumulate(points, lambda lhs, rhs: StatePoint(lhs.x, lhs.y, lhs.angle, lhs.weight + rhs.weight)))
+    cumulative_points = list(itertools.accumulate(points, lambda lhs, rhs: StatePoint(rhs.x, rhs.y, rhs.angle, rhs.weight + lhs.weight)))
 
     resampled = []
     for i in range(NUMBER_OF_PARTICLES):

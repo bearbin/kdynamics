@@ -5,6 +5,7 @@ from common import *
 from robomap import *
 from math import cos, sin, radians, acos, sqrt, hypot
 
+HUXLEY_MAP = Map.draw_robot_wars_map()
 STD_DEV = 2.5
 PRE_NORM_FACTOR = 0.5
 ROBUSTNESS_K = 0.04
@@ -31,10 +32,8 @@ def intersects_wall(x, y, wall):
   return left_x <= x and x <= right_x and bottom_y <= y and y <= top_y
 
 def find_closest_wall(x, y, theta):
-  mymap = Map.draw_robot_wars_map()
-
   # Get list of (wall, distance) pairs
-  wms = [(wall, get_dist_to_wall(x, y, theta, wall)) for wall in mymap.walls]
+  wms = [(wall, get_dist_to_wall(x, y, theta, wall)) for wall in HUXLEY_MAP.walls]
 
   # Filter out walls behind or to the side of us
   filtered_wms = filter(lambda wm: wm[1] >= 0 and intersects_wall(x + wm[1] * cos(theta), y + wm[1] * sin(theta), wm[0]), wms) 
@@ -44,7 +43,6 @@ def find_closest_wall(x, y, theta):
   if len(l) <= 0:
     return ((), 10000000)
   closest_wall_and_distance = min(l, key = lambda wm: wm[1])
-
 
   # Return wall with min distance m
   return closest_wall_and_distance

@@ -14,8 +14,8 @@ RIGHT_WHEEL = PORT_B
 LEFT_WHEEL = PORT_C
 
 class ScalingFactors:
-   movement = 1.11 * 360 / 229
-   rotation = 1.03 * 360 / 229
+   movement = 1.115 * 360 / 229
+   rotation = 1.297 * 360 / 229
 
 
 # LIMIT 25
@@ -34,20 +34,34 @@ def get_motor_power(BP, port):
 def get_motor_position(port):
   return BP.get_motor_status(port)[2]
 
+def _compute_percentage_yet_to_go(left_stop, left, delta_encoder_left, right_stop, right, delta_encoder_right):
+  if abs(delta_encoder_left) < 0.1:
+    left = 0
+  else:
+    left = abs((left_stop - left) / delta_encoder_left)
+
+  if abs(delta_encoder_right) < 0.1:
+    right = 0
+  else:
+    right = abs((right_stop - right) / delta_encoder_right)
+
+  return min(left, right)
+
 def _move(scaling, mm_left, mm_right):
   # -1 factor because big wheels at the front!
   delta_encoder_left = (-1.0) * scaling * mm_left
   delta_encoder_right = (-1.0) * scaling * mm_right
 
-  left_stop_threshold = 0.99 * (get_motor_position(LEFT_WHEEL) + delta_encoder_left)
-  right_stop_threshold = 0.99 * (get_motor_position(RIGHT_WHEEL) + delta_encoder_right)
+  left_stop_threshold = get_motor_position(LEFT_WHEEL) + delta_encoder_left
+  right_stop_threshold = get_motor_position(RIGHT_WHEEL) + delta_encoder_right
 
   BP.set_motor_position(LEFT_WHEEL, get_motor_position(LEFT_WHEEL) + delta_encoder_left)
   BP.set_motor_position(RIGHT_WHEEL, get_motor_position(RIGHT_WHEEL) + delta_encoder_right)
 
-  limit = 10
   timeout = 0
   difference = -1337
+  acceleration_profile = 400
+  max_power = 0.1 * acceleration_profile # Max power achieved at 10% of journey
 
   while True:
     left = abs(get_motor_position(LEFT_WHEEL))
@@ -58,32 +72,36 @@ def _move(scaling, mm_left, mm_right):
 #    if (left >= left_stop and right >= right_stop):
 #      break
 
-    if timeout == 20:
+    prev_difference = difference
+    difference = _compute_percentage_yet_to_go(left_stop, left, delta_encoder_left, right_stop, right, delta_encoder_right)
+
+    #print((left, timeout, (max(abs(delta_encoder_left), abs(delta_encoder_right)) / 4 + difference * 10)))
+    if timeout >= (max(abs(delta_encoder_left), abs(delta_encoder_right)) / 4 + difference * 10):
       break
 
-    prev_difference = difference
-    difference = abs(min(
-      (left_stop - left) / (abs(delta_encoder_left) + 0.0001),
-      (right_stop - right) / (abs(delta_encoder_right) + 0.0001)
-    ))
-
-    if difference == prev_difference:
-      timeout = timeout + 1
+    #print(prev_difference - difference)
+    #if (prev_difference - difference) < 0.001:
+    timeout = timeout + 1
+    #else:
+    #  timeout = 0
 
     (_, _, _, left_dps) = BP.get_motor_status(LEFT_WHEEL)
     (_, _, _, right_dps) = BP.get_motor_status(RIGHT_WHEEL)
 
-    right_limit_adjust = (abs(left_dps) - abs(right_dps)) / 7
-
-    #print(right_limit_adjust)
+    right_limit_adjust = min(4, (abs(left_dps) - abs(right_dps)) / 7)
 
     if difference > 0.9:
-      limit = limit + 3
+      limit = (1 - difference) * acceleration_profile
     elif difference < 0.1:
-      limit = limit - 3
+      limit = (1 - difference) * -acceleration_profile + acceleration_profile
+    else:
+      limit = max_power
+
+    #print(limit)
+    #print(difference)
 
     _set_limit_at(limit, limit + right_limit_adjust)
-    time.sleep(0.1)
+    time.sleep(0.01)
 
   BP.set_motor_dps(LEFT_WHEEL, 0)
   BP.set_motor_dps(RIGHT_WHEEL, 0)
@@ -130,11 +148,11 @@ def _turn_left(degrees):
   print("Turn complete")
 
 def _set_limit_at(left_percentage, right_percentage):
-  if left_percentage < 10:
-    left_percentage = 10
+  if left_percentage < 20:
+    left_percentage = 20
 
-  if right_percentage < 10:
-    right_percentage = 10
+  if right_percentage < 20:
+    right_percentage = 20
 
   BP.set_motor_limits(LEFT_WHEEL, left_percentage)
   BP.set_motor_limits(RIGHT_WHEEL, right_percentage)
