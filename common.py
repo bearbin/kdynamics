@@ -15,7 +15,7 @@ LEFT_WHEEL = PORT_C
 
 class ScalingFactors:
    movement = 1.115 * 360 / 229
-   rotation = 1.297 * 360 / 229
+   rotation = 1.15 * 360 / 229
 
 
 # LIMIT 25
@@ -34,61 +34,54 @@ def get_motor_power(BP, port):
 def get_motor_position(port):
   return BP.get_motor_status(port)[2]
 
-def _compute_percentage_yet_to_go(left_stop, left, delta_encoder_left, right_stop, right, delta_encoder_right):
-  if abs(delta_encoder_left) < 0.1:
-    left = 0
-  else:
-    left = abs((left_stop - left) / delta_encoder_left)
+def _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_encoder):
+  if abs(delta_encoder) < 0.1:
+    return 0
 
-  if abs(delta_encoder_right) < 0.1:
-    right = 0
-  else:
-    right = abs((right_stop - right) / delta_encoder_right)
+  return max(abs(right_stop - right), abs(left_stop - left)) / abs(delta_encoder)
 
-  return min(left, right)
-
-def _move(scaling, mm_left, mm_right):
+def _move(scaling, mm, turn, delta_fun):
   # -1 factor because big wheels at the front!
-  delta_encoder_left = (-1.0) * scaling * mm_left
-  delta_encoder_right = (-1.0) * scaling * mm_right
+  delta_encoder = (-1.0) * scaling * mm
+  left_delta_encoder = -delta_encoder if turn else delta_encoder
 
-  left_stop_threshold = get_motor_position(LEFT_WHEEL) + delta_encoder_left
-  right_stop_threshold = get_motor_position(RIGHT_WHEEL) + delta_encoder_right
+  left_stop_threshold = get_motor_position(LEFT_WHEEL) + left_delta_encoder
+  right_stop_threshold = get_motor_position(RIGHT_WHEEL) + delta_encoder
 
-  BP.set_motor_position(LEFT_WHEEL, get_motor_position(LEFT_WHEEL) + delta_encoder_left)
-  BP.set_motor_position(RIGHT_WHEEL, get_motor_position(RIGHT_WHEEL) + delta_encoder_right)
+  BP.set_motor_position(LEFT_WHEEL, left_stop_threshold)
+  BP.set_motor_position(RIGHT_WHEEL, right_stop_threshold)
 
   timeout = 0
-  difference = -1337
-  acceleration_profile = 400
+  difference = 1
+  acceleration_profile = 350
   max_power = 0.1 * acceleration_profile # Max power achieved at 10% of journey
+
+  left_stop = abs(left_stop_threshold)
+  right_stop = abs(right_stop_threshold)
 
   while True:
     left = abs(get_motor_position(LEFT_WHEEL))
     right = abs(get_motor_position(RIGHT_WHEEL))
-    left_stop = abs(left_stop_threshold)
-    right_stop = abs(right_stop_threshold)
-
-#    if (left >= left_stop and right >= right_stop):
-#      break
 
     prev_difference = difference
-    difference = _compute_percentage_yet_to_go(left_stop, left, delta_encoder_left, right_stop, right, delta_encoder_right)
+    difference = _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_encoder)
 
-    #print((left, timeout, (max(abs(delta_encoder_left), abs(delta_encoder_right)) / 4 + difference * 10)))
-    if timeout >= (max(abs(delta_encoder_left), abs(delta_encoder_right)) / 4 + difference * 10):
+#    print((timeout, delta_encoder, (abs(delta_encoder) / 5 + difference * 10)))
+#    if timeout >= (abs(delta_encoder) / 5 + difference * 10):
+#    print(max(abs(left_stop - left), abs(right_stop - right)))
+    #if max(abs(left_stop - left), abs(right_stop - right)) < 1 or timeout == 10:
+    if abs(right_stop - right) < 1.5 or timeout == 10:
       break
 
-    #print(prev_difference - difference)
-    #if (prev_difference - difference) < 0.001:
-    timeout = timeout + 1
-    #else:
-    #  timeout = 0
+    delta_fun((prev_difference - difference) * mm * 0.1)
+
+    if prev_difference == difference:
+      timeout = timeout + 1
 
     (_, _, _, left_dps) = BP.get_motor_status(LEFT_WHEEL)
     (_, _, _, right_dps) = BP.get_motor_status(RIGHT_WHEEL)
 
-    right_limit_adjust = min(4, (abs(left_dps) - abs(right_dps)) / 7)
+    right_limit_adjust = max(-4, min(4, (abs(left_dps) - abs(right_dps)) / 7))
 
     if difference > 0.9:
       limit = (1 - difference) * acceleration_profile
@@ -97,6 +90,7 @@ def _move(scaling, mm_left, mm_right):
     else:
       limit = max_power
 
+    limit = 25
     #print(limit)
     #print(difference)
 
@@ -106,11 +100,11 @@ def _move(scaling, mm_left, mm_right):
   BP.set_motor_dps(LEFT_WHEEL, 0)
   BP.set_motor_dps(RIGHT_WHEEL, 0)
 
-def move(mm):
-  _move(ScalingFactors.movement, mm, mm)
+def move(mm, delta_fun = lambda x: x):
+  _move(ScalingFactors.movement, mm, False, delta_fun)
 
-def move_cm(cm):
-  move(cm * 10)
+def move_cm(cm, delta_fun = lambda x: x):
+  move(cm * 10, delta_fun)
 
 def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
@@ -120,8 +114,8 @@ def move_with_speed(speed):
 def _threshold(degrees):
   return max(1, min(3.5, 1/(math.sqrt(abs(degrees))) * 60 * math.pi))
 
-def turn_left(degrees):
-  _move(ScalingFactors.rotation, -degrees, degrees)
+def turn_left(degrees, delta_fun = lambda x: x):
+  _move(ScalingFactors.rotation, degrees, True, delta_fun)
 
 def _turn_left(degrees):
   if degrees == 0:
@@ -166,7 +160,7 @@ def _set_sonar_sensor():
 def get_sonar_cm():
   while True:
     try:
-      measurements = [BP.get_sensor(SONAR_PORT) for i in range(5)]
+      measurements = [BP.get_sensor(SONAR_PORT) + 4 for i in range(5)]
       measurements.sort()
       return measurements[2] # Return the median distance
     except (IOError, brickpi3.SensorError):

@@ -6,26 +6,60 @@ import mcl
 
 from localisation import PointCloud
 from rendering import *
-from math import atan2, cos, sin, degrees, radians, sqrt, hypot
+from math import atan2, cos, sin, degrees, radians, sqrt, hypot, pi
 
 WAYPOINTS = [
 [84,30],
 
-# [100,30],
+[104,30],
+[124,30],
+[144,30],
+[164,30],
 
 [180,30],
+
+[180,45],
+
 [180,54],
+
+[160,54],
+
 [138,54],
+
+[138,74],
+[138,94],
+[138,114],
+[138,134],
+[138,150],
+
 [138,168],
+
+[126,168],
+
 [114,168],
+
+[114,148],
+[114,128],
+[114,108],
+
 [114,84],
+
+[94,84],
+
 [84,84],
+
+[84,64],
+[84,44],
+
 [84,30]
 ]
 
-INITIAL_X = 84
-INITIAL_Y = 30
-INITIAL_ANGLE = 0
+# NOTE: angle kept in radians, only converted to degrees for display
+#       and when passed into motor functions
+
+INITIAL_X = WAYPOINTS[0][0]
+INITIAL_Y = WAYPOINTS[0][1]
+INITIAL_ANGLE = 0.0
 
 def sign(number):
     return -1 if number < 0 else 1
@@ -41,6 +75,8 @@ def normalise_rads(angle):
 def navigateToWaypoint(target_x_metres, target_y_metres):
     global x_cm, y_cm, angle
 
+    common.get_sonar_cm()
+
     target_x_cm = target_x_metres * 100
     target_y_cm = target_y_metres * 100
 
@@ -50,68 +86,53 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
     if delta_x == 0 and delta_y == 0:
       return
 
-    target_angle = degrees(atan2(delta_y, delta_x))
+    target_angle = atan2(delta_y, delta_x)
 
     delta_angle = (target_angle - angle)
-    if delta_angle < -180:
-      delta_angle += 360
-    elif delta_angle > 180:
-      delta_angle -= 360
+    if delta_angle <= -pi:
+      delta_angle += 2 * pi
+    elif delta_angle > pi:
+      delta_angle -= 2 * pi
 
-    print()
-    print()
-    print()
-    print("I need to move in y by = ", delta_y)
-    print("I need to move in x by = ", delta_x)
-    print("I need to rotate by angle = ", delta_angle)
-    print("Final absolute angle I need to get to = ", target_angle)
-    print("My current absolute angle = ", angle)
+    #print()
+    #print()
+    #print()
+    #print("I need to move in y by = ", delta_y)
+    #print("I need to move in x by = ", delta_x)
+    print("I need to rotate by degree angle = ", degrees(delta_angle))
+    #print("Final absolute angle I need to get to = ", target_angle)
+    #print("My current absolute angle = ", angle)
 
-    common.turn_left(delta_angle)
-    points.rotate_degrees_left(delta_angle)
+    common.turn_left(degrees(delta_angle))
+    points.rotate_degrees_left(degrees(delta_angle))
 
     #time.sleep(2)
 
     distance = hypot(delta_x, delta_y)
-    print("Distance I need to travel = ", distance)
+    #print("Distance I need to travel = ", distance)
+    #common.move_cm(distance, lambda delta: (points.move(delta), points.fuse_sonar(common.get_sonar_cm()), drawParticles(points)))
     common.move_cm(distance)
     points.move(distance)
 
-    #time.sleep(1)
-
-    angle = degrees(normalise_rads(points.get_mean().angle))
-    x_cm = points.get_mean().x
-    y_cm = points.get_mean().y
-
-    print("After move, my estimated position is: ")
-    print("x = ", x_cm)
-    print("y = ", y_cm)
-    print("angle = ", angle)
-
-    print()
-    print("Performing MCL resampling")
+    time.sleep(0.5)
 
     sonar_reading = common.get_sonar_cm()
     print("My sonar reading is ", sonar_reading)
 
     points.fuse_sonar(sonar_reading)
     new_mean = points.get_mean()
-    angle = degrees(normalise_rads(new_mean.angle))
+    angle = normalise_rads(new_mean.angle)
     x_cm = new_mean.x
     y_cm = new_mean.y
 
-    print("After performing MCL, my estimated position is: ")
-    print("x = ", x_cm)
-    print("y = ", y_cm)
-    print("angle = ", angle)
     drawParticlesStateful(points)
-#    time.sleep(15)
 
 drawCoordinateFrame(1)
+drawWalls()
 
 i = 0
 try:
-  while i < 9:
+  while i < len(WAYPOINTS):
     # print("Insert WX and WY")
     # [target_x, target_y] = map(float, input().split())
     print(points.get_mean())
