@@ -1,8 +1,8 @@
 import time
-import brickpi3
+import brickpi333 as brickpi3
 import math
 
-BP = brickpi3.BrickPi3()
+BP = brickpi3.BrickPi333()
 
 SONAR_PORT = BP.PORT_1
 SONAR_INITIALISED = False
@@ -12,10 +12,11 @@ PORT_B = BP.PORT_B
 PORT_C = BP.PORT_C
 RIGHT_WHEEL = PORT_B
 LEFT_WHEEL = PORT_C
+SONAR_MOTOR = PORT_A
 
 class ScalingFactors:
    movement = 1.115 * 360 / 229
-   rotation = 1.15 * 360 / 229
+   rotation = 1.155 * 360 / 229
 
 
 # LIMIT 25
@@ -151,6 +152,10 @@ def _set_limit_at(left_percentage, right_percentage):
   BP.set_motor_limits(LEFT_WHEEL, left_percentage)
   BP.set_motor_limits(RIGHT_WHEEL, right_percentage)
 
+def turn_sonar_left(degrees):
+  curr_angle = get_motor_position(SONAR_MOTOR)
+  BP.set_motor_position(SONAR_MOTOR, curr_angle + degrees)
+
 def _set_sonar_sensor():
   BP.set_sensor_type(BP.PORT_1 + BP.PORT_2 + BP.PORT_3 + BP.PORT_4, BP.SENSOR_TYPE.NONE)
   time.sleep(0.3)
@@ -164,6 +169,7 @@ def get_sonar_cm():
       measurements.sort()
       return measurements[2] # Return the median distance
     except (IOError, brickpi3.SensorError):
+      print("Got an error")
       _set_sonar_sensor()
 
 def get_sonar_mm():
