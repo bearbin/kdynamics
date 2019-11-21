@@ -32,12 +32,31 @@ def drawWalls():
 # h: H to O
     drawLineTuple((0,0,0,168))        # a
     drawLineTuple((0,168,84,168))     # b
-    drawLineTuple((84,126,84,210))    # c
+    drawLineTuple((84,168,84,210))    # c
     drawLineTuple((84,210,168,210))   # d
     drawLineTuple((168,210,168,84))   # e
     drawLineTuple((168,84,210,84))    # f
     drawLineTuple((210,84,210,0))     # g
     drawLineTuple((210,0,0,0))        # h
+
+def drawPath():
+# Definitions of walls
+# a: O to A
+# b: A to B
+# c: C to D
+# d: D to E
+# e: E to F
+# f: F to G
+# g: G to H
+# h: H to O
+    drawLineTuple((84,30,180, 30))        # a
+    drawLineTuple((180,30,180,54))     # b
+    drawLineTuple((180, 54, 138, 54))    # c
+    drawLineTuple((138, 54, 138, 168))   # d
+    drawLineTuple((138,168,114, 168))   # e
+    drawLineTuple((114,168,114,84))    # f
+    drawLineTuple((114,84,84, 84))     # g
+    drawLineTuple((84,84,84,30))        # h
 
 def drawLineTupleRaw(line):
     print("drawLine:" + str(line))
