@@ -21,7 +21,7 @@ def measure_sonar():
 
 BP.set_motor_limits(PORT_A, 25)
 
-def find_waypoint_angle(bottleless):
+def find_bottle(bottleless):
   curr_angle = 180
 
   signature = []
@@ -36,8 +36,6 @@ def find_waypoint_angle(bottleless):
      reading = measure_sonar()
      signature.append(reading)
 
-
-
   print("Bottleless is ", bottleless)
   print()
   print("Signature is ", signature)
@@ -51,14 +49,20 @@ def find_waypoint_angle(bottleless):
       continue
     difference = bottleless[i] - signature[i]
     if difference >= threshold:
-      waypoints.append(180 - i * 5 * 7.5 / 9)
+      waypoints.append((180 - i * 5 * 7.5 / 9, signature[i]))
 
   print("Waypoints index are ", waypoints)
-  print(sorted(waypoints)[round(len(waypoints)/2)])
+  bottle_pos = sorted(waypoints)[round(len(waypoints)/2)]
+  print("Bottle at : ", bottle_pos)
 
-start_waypoint_c_x = 42 
-start_waypoint_c_y = 30
+  return bottle_pos
+
+start_waypoint_c_x = 0.42 
+start_waypoint_c_y = 0.30
 
 navigateToWaypoint(start_waypoint_c_x, start_waypoint_c_y)
+time.sleep(1)
 
-find_waypoint_angle(bottleless_c) 
+(bottle_angle, bottle_dist) = find_bottle(bottleless_c)
+turn_left(-bottle_angle)    # TODO: check relative
+move_cm(bottle_dist)        # TODO: until bump

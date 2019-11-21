@@ -13,6 +13,9 @@ PORT_C = BP.PORT_C
 RIGHT_WHEEL = PORT_B
 LEFT_WHEEL = PORT_C
 SONAR_MOTOR = PORT_A
+LEFT_BUMPER = BP.PORT_3
+RIGHT_BUMPER = BP.PORT_2
+
 
 class ScalingFactors:
    movement = 1.115 * 360 / 229
@@ -156,11 +159,20 @@ def turn_sonar_left(degrees):
   curr_angle = get_motor_position(SONAR_MOTOR)
   BP.set_motor_position(SONAR_MOTOR, curr_angle + degrees)
 
+def _set_bumper_sensors():
+  return False
+  #for bumper in [LEFT_BUMPER, RIGHT_BUMPER]:
+  #BP.set_sensor_type(bumper, BP.SENSOR_TYPE.TOUCH)
+
 def _set_sonar_sensor():
   BP.set_sensor_type(BP.PORT_1 + BP.PORT_2 + BP.PORT_3 + BP.PORT_4, BP.SENSOR_TYPE.NONE)
   time.sleep(0.3)
   BP.set_sensor_type(SONAR_PORT, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+  _set_bumper_sensors()
   time.sleep(0.3)
+
+def _set_sensors():
+  _set_sonar_sensor()
 
 def get_sonar_cm():
   while True:
@@ -185,3 +197,42 @@ def total_reset():
 def reset_encoders():
     BP.reset_motor_encoder(PORT_B)
     BP.reset_motor_encoder(PORT_C)
+
+def check_bump():
+    tries = 10
+    for i in range(tries):
+        try:
+            value_left = BP.get_sensor(LEFT_BUMPER)
+            value_right = BP.get_sensor(RIGHT_BUMPER)
+            print('bump readings:')
+            print(value_left)
+            print(value_right)
+            return True
+        except brickpi3.SensorError as error:
+            print(error)
+    return False
+
+BUMP_BACKUP_DISTANCE_CM = 10
+
+def bump_restore_and_rotate():
+    move_cm(-BUMP_BACKUP_DISTANCE_CM)
+    turn_left(180)
+
+# BP.set_sensor_type(BP.PORT_1, BP.SENSOR_TYPE.TOUCH)
+# 
+# try:
+#     while True:
+#         # read and display the sensor value
+#         # BP.get_sensor retrieves a sensor value.
+#         # BP.PORT_1 specifies that we are looking for the value of sensor port 1.
+#         # BP.get_sensor returns the sensor value (what we want to display).
+#         try:
+#             value = BP.get_sensor(BP.PORT_1)
+#             print(value)
+#         except brickpi3.SensorError as error:
+#             print(error)
+#         
+#         time.sleep(0.02)  # delay for 0.02 seconds (20ms) to reduce the Raspberry Pi CPU load.
+# 
+# except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
+#     BP.reset_all()        # Unconfigure the sensors, disable the motors, and restore the LED to the control of the BrickPi3 firmware.
