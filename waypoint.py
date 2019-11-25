@@ -8,69 +8,10 @@ from localisation import PointCloud
 from rendering import *
 from math import atan2, cos, sin, degrees, radians, sqrt, hypot, pi
 
-WAIT_TIME = 0.5
+
+WAIT_AFTER_MOVE_TIME = 0.5
 USING_MCL = True
 
-#WAYPOINTS = [
-#[84,30],
-
-#[104,30],
-#[124,30],
-#[144,30],
-#[164,30],
-
-#[180,30],
-
-#[180,45],
-
-#[180,54],
-
-#[160,54],
-
-#[138,54],
-
-#[138,74],
-#[138,94],
-#[138,114],
-#[138,134],
-#[138,150],
-
-#[138,168],
-
-#[126,168],
-
-#[114,168],
-
-#[114,148],
-#[114,128],
-#[114,108],
-
-#[114,84],
-
-#[94,84],
-
-#[84,84],
-
-#[84,64],
-#[84,44],
-
-#[84,30]
-#]
-
-
-# NOTE: angle kept in radians, only converted to degrees for display
-#       and when passed into motor functions
-INITIAL_X = 84
-INITIAL_Y = 30
-INITIAL_ANGLE_RADIANS = 0.0
-
-x_cm = INITIAL_X
-y_cm = INITIAL_Y
-angle_radians = INITIAL_ANGLE_RADIANS
-points = PointCloud(x_cm, y_cm, angle_radians)
-
-def sign(number):
-    return -1 if number < 0 else 1
 
 def compute_clamped_delta(target_angle_radians, current_angle_radians):
     delta_angle_radians = (target_angle_radians - current_angle_radians)
@@ -80,11 +21,14 @@ def compute_clamped_delta(target_angle_radians, current_angle_radians):
       delta_angle_radians -= 2 * pi
     return delta_angle_radians
 
+
 def compute_target_angle_radians(delta_x, delta_y):
     return atan2(delta_y, delta_x) 
 
+
 def wait():
-    time.sleep(WAIT_TIME)
+    time.sleep(WAIT_AFTER_MOVE_TIME)
+
 
 def compute_delta_angle_and_distance(cur_x_cm, cur_y_cm, target_x_cm, target_y_cm):
     delta_y_cm = target_y_cm - cur_y_cm
@@ -160,16 +104,18 @@ def navigate_to_waypoint_cm(target_x_cm, target_y_cm)
         ROBOT_set_estimated_position(target_x_cm, target_y_cm, angle_radians + delta_angle_degrees)
 
 
-#i = 0
-#try:
-#  while i < len(WAYPOINTS):
-    # print("Insert WX and WY")
-    # [target_x, target_y] = map(float, input().split())
-#    print(points.get_mean())
+def ROBOT_initialize_waypoint_state(init_x_cm, init_y_cm, init_angle_radians):
+    global x_cm, y_cm, angle_radians, points
+    x_cm = init_x_cm
+    y_cm = init_y_cm
+    angle_radians = init_angle_radians
+    points = PointCloud(x_cm, y_cm, angle_radians)
 
-#    [target_x, target_y] = map(lambda x: x / 100, WAYPOINTS[i])
-#    i = (i + 1) # % len(WAYPOINTS)
-#    navigateToWaypoint(target_x, target_y)
-#finally:
-#  common.total_reset()
 
+def ROBOT_go_to_waypoint(waypoint):
+    navigate_to_waypoint_cm(waypoint[0], waypoint[1])
+
+
+def ROBOT_do_waypoints(waypoints_cm):
+    for waypoint in waypoints_cm:
+        ROBOT_go_to_waypoint(waypoint)

@@ -94,7 +94,7 @@ def _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_enco
 
   return max(abs(right_stop - right), abs(left_stop - left)) / abs(delta_encoder)
 
-def _move(scaling, mm, turn, delta_fun, bump_check):
+def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = lambda x: False):
   # -1 factor because big wheels at the front!
   delta_encoder = (-1.0) * scaling * mm
   left_delta_encoder = -delta_encoder if turn else delta_encoder
@@ -114,6 +114,9 @@ def _move(scaling, mm, turn, delta_fun, bump_check):
   right_stop = abs(right_stop_threshold)
 
   while True:
+    if check_stopping_condition():
+        break
+
     if bump_check:
         print(bump_check)
         bump_status = check_bump_bool()
@@ -163,14 +166,18 @@ def _move(scaling, mm, turn, delta_fun, bump_check):
   BP.set_motor_dps(LEFT_WHEEL, 0)
   BP.set_motor_dps(RIGHT_WHEEL, 0)
 
-def move(mm, delta_fun = lambda x: x, check_bumps = False):
-  _move(ScalingFactors.movement, mm, False, delta_fun, check_bumps)
+def move(mm, delta_fun = lambda x: x, check_bumps = False,
+         check_stopping_condition = lambda x: False):
+  _move(ScalingFactors.movement, mm, False, delta_fun, check_bumps, check_stopping_condition)
 
 def move_cm(cm, delta_fun = lambda x: x):
   move(cm * 10, delta_fun)
 
 def move_cm_check_bumps(cm, delta_fun = lambda x: x):
   move(cm * 10, delta_fun, True)
+
+def move_cm_check_bumps_and_condition(cm, check_stopping_condition, delta_fun = lambda x: x):
+  move(cm * 10, delta_fun, True, check_stopping_condition)
 
 def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
@@ -266,3 +273,51 @@ def bump_restore_and_rotate():
 
 def normalise_rads(angle):
   return atan2(sin(angle), cos(angle))
+
+
+
+ORIGINAL_WAYPOINTS = [
+[84,30],
+
+[104,30],
+[124,30],
+[144,30],
+[164,30],
+
+[180,30],
+
+[180,45],
+
+[180,54],
+
+[160,54],
+
+[138,54],
+
+[138,74],
+[138,94],
+[138,114],
+[138,134],
+[138,150],
+
+[138,168],
+
+[126,168],
+
+[114,168],
+
+[114,148],
+[114,128],
+[114,108],
+
+[114,84],
+
+[94,84],
+
+[84,84],
+
+[84,64],
+[84,44],
+
+[84,30]
+]
