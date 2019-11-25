@@ -8,6 +8,9 @@ from localisation import PointCloud
 from rendering import *
 from math import atan2, cos, sin, degrees, radians, sqrt, hypot, pi
 
+WAIT_TIME = 0.5
+USING_MCL = True
+
 #WAYPOINTS = [
 #[84,30],
 
@@ -69,9 +72,6 @@ points = PointCloud(x_cm, y_cm, angle_radians)
 def sign(number):
     return -1 if number < 0 else 1
 
-def no_need_to_move(delta_x, delta_y):
-    return delta_x == 0 and delta_y == 0
-
 def compute_clamped_delta(target_angle_radians, current_angle_radians):
     delta_angle_radians = (target_angle_radians - current_angle_radians)
     if delta_angle_radians <= -pi:
@@ -83,55 +83,82 @@ def compute_clamped_delta(target_angle_radians, current_angle_radians):
 def compute_target_angle_radians(delta_x, delta_y):
     return atan2(delta_y, delta_x) 
 
-def navigate_to_waypoint_cm(target_x_cm, target_y_cm)
-    global x_cm, y_cm, angle_radians
+def wait():
+    time.sleep(WAIT_TIME)
 
-    DEBUG_print_current_state_deg(x_cm, y_cm, angle_radians)
-
-    delta_y_cm = target_y_cm - y_cm
-    delta_x_cm = target_x_cm - x_cm
-    if no_need_to_move(delta_x_cm, delta_y_cm):
-      return
+def compute_delta_angle_and_distance(cur_x_cm, cur_y_cm, target_x_cm, target_y_cm):
+    delta_y_cm = target_y_cm - cur_y_cm
+    delta_x_cm = target_x_cm - cur_x_cm
 
     target_angle_radians = compute_target_angle_radians(delta_x_cm, delta_y_cm)
     delta_angle_radians = compute_clamped_delta(target_angle_radians, current_angle_radians)
+    delta_angle_degrees = degrees(delta_angle_radians)
+    distance_to_travel_cm = hypot(delta_x_cm, delta_y_cm)
 
-    
+    DEBUG_print_target_state_rad(target_x_cm, target_y_cm, target_angle_radians)
+    DEBUG_print_delta_state_rad(delta_x_cm, delta_y_cm, delta_angle_radians)
 
-    print("I need to rotate by degree angle = ", degrees(delta_angle_radians))
-    common.turn_left(degrees(delta_angle_radians))
-    points.rotate_degrees_left(degrees(delta_angle_radians))
+    return (delta_angle_degrees, distance_to_travel_cm)
 
-    time.sleep(0.5)
 
-    distance = hypot(delta_x_cm, delta_y_cm)
-    #print("Distance I need to travel = ", distance)
+def ROBOT_rotate_left(delta_angle_degrees):
+    global points
+    common.turn_left(delta_angle_degrees)
+    points.rotate_degrees_left(delta_angle_degrees)
+
+
+def ROBOT_move_forward(delta_cm):
+    global points
     #common.move_cm(distance, lambda delta: (points.move(delta), points.fuse_sonar(common.get_sonar_cm()), drawParticles(points)))
-    print("Moving distance ", distance)
-    common.move_cm(distance)
-    #points.move(distance)
-
-    time.sleep(0.5)
-
-    #sonar_reading = common.get_sonar_cm()
-   # print("My sonar reading is ", sonar_reading)
-
-    #points.fuse_sonar(sonar_reading)
-    #new_mean = points.get_mean()
-    angle_radians = angle_radians + delta_angle_radians
-    x_cm = x_cm + delta_x_cm
-    y_cm = y_cm + delta_y_cm
-   # angle_radians = normalise_rads(new_mean.angle)
-   # x_cm = new_mean.x
-   # y_cm = new_mean.y
-   # print(x_cm, y_cm)
-   # print()
-
-    #drawParticlesStateful(points)
+    common.move_cm(delta_cm)
+    points.move(delta_cm)
 
 
-def navigateToWaypoint(target_x_metres, target_y_metres):
-    navigate_to_waypoint_cm(target_x_metres * 100, target_y_metres * 100)
+def ROBOT_set_estimated_position(new_x_cm, new_y_cm, new_angle_radians):
+    global x_cm, y_cm, angle_radians, points
+    x_cm = new_x_cm
+    y_cm = new_y_cm
+    angle_radians = new_angle_radians
+
+
+def ROBOT_update_estimated_position_using_mcl_and_sonar():
+    global x_cm, y_cm, angle_radians, points
+
+    sonar_reading_cm = common.get_sonar_cm()
+    points.fuse_sonar(sonar_reading_cm)
+    new_mean = points.get_mean()
+
+    x_cm = new_mean.x
+    y_cm = new_mean.y
+    angle_radians = common.normalise_rads(new_mean.angle)
+
+
+def mcl_redraw():
+    global points
+    drawParticlesStateful(points)
+
+
+def navigate_to_waypoint_cm(target_x_cm, target_y_cm)
+    global x_cm, y_cm, angle_radians, points
+    DEBUG_print_current_state_deg(x_cm, y_cm, angle_radians)
+
+    (delta_angle_degrees, distance_to_travel_cm)
+      = compute_delta_angle_and_distance(x_cm, y_cm, target_x_cm, target_y_cm)
+    
+    if (distance_to_travel_cm == 0):
+        return
+
+    ROBOT_rotate_left(delta_angle_degrees)
+    wait()
+
+    ROBOT_move_forward(distance_to_travel_cm)
+    wait()
+
+    if USING_MCL:
+        ROBOT_update_estimated_position_using_mcl_and_sonar()
+    else:
+        ROBOT_set_estimated_position(target_x_cm, target_y_cm, angle_radians + delta_angle_degrees)
+
 
 #i = 0
 #try:
