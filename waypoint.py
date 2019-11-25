@@ -54,63 +54,57 @@ from math import atan2, cos, sin, degrees, radians, sqrt, hypot, pi
 #[84,30]
 #]
 
+
 # NOTE: angle kept in radians, only converted to degrees for display
 #       and when passed into motor functions
-
 INITIAL_X = 84
 INITIAL_Y = 30
-INITIAL_ANGLE = 0.0
+INITIAL_ANGLE_RADIANS = 0.0
+
+x_cm = INITIAL_X
+y_cm = INITIAL_Y
+angle_radians = INITIAL_ANGLE_RADIANS
+points = PointCloud(x_cm, y_cm, angle_radians)
 
 def sign(number):
     return -1 if number < 0 else 1
 
-x_cm = INITIAL_X
-y_cm = INITIAL_Y
-angle = INITIAL_ANGLE
-points = PointCloud(x_cm, y_cm, angle)
+def no_need_to_move(delta_x, delta_y):
+    return delta_x == 0 and delta_y == 0
 
-def normalise_rads(angle):
-  return atan2(sin(angle), cos(angle))
+def compute_clamped_delta(target_angle_radians, current_angle_radians):
+    delta_angle_radians = (target_angle_radians - current_angle_radians)
+    if delta_angle_radians <= -pi:
+      delta_angle_radians += 2 * pi
+    elif delta_angle_radians > pi:
+      delta_angle_radians -= 2 * pi
+    return delta_angle_radians
 
-def navigateToWaypoint(target_x_metres, target_y_metres):
-    global x_cm, y_cm, angle
+def compute_target_angle_radians(delta_x, delta_y):
+    return atan2(delta_y, delta_x) 
 
-    #common.get_sonar_cm()
+def navigate_to_waypoint_cm(target_x_cm, target_y_cm)
+    global x_cm, y_cm, angle_radians
 
-    print("Currently at x, y = ", x_cm, y_cm)
+    DEBUG_print_current_state_deg(x_cm, y_cm, angle_radians)
 
-    target_x_cm = target_x_metres * 100
-    target_y_cm = target_y_metres * 100
-
-    delta_y = target_y_cm - y_cm
-    delta_x = target_x_cm - x_cm
-
-    if delta_x == 0 and delta_y == 0:
+    delta_y_cm = target_y_cm - y_cm
+    delta_x_cm = target_x_cm - x_cm
+    if no_need_to_move(delta_x_cm, delta_y_cm):
       return
 
-    target_angle = atan2(delta_y, delta_x)
+    target_angle_radians = compute_target_angle_radians(delta_x_cm, delta_y_cm)
+    delta_angle_radians = compute_clamped_delta(target_angle_radians, current_angle_radians)
 
-    delta_angle = (target_angle - angle)
-    if delta_angle <= -pi:
-      delta_angle += 2 * pi
-    elif delta_angle > pi:
-      delta_angle -= 2 * pi
+    
 
-    #print()
-    #print()
-    #print()
-    #print("I need to move in y by = ", delta_y)
-    #print("I need to move in x by = ", delta_x)
-    #print("Final absolute angle I need to get to = ", target_angle)
-    #print("My current absolute angle = ", angle)
-
-    print("I need to rotate by degree angle = ", degrees(delta_angle))
-    common.turn_left(degrees(delta_angle))
-    points.rotate_degrees_left(degrees(delta_angle))
+    print("I need to rotate by degree angle = ", degrees(delta_angle_radians))
+    common.turn_left(degrees(delta_angle_radians))
+    points.rotate_degrees_left(degrees(delta_angle_radians))
 
     time.sleep(0.5)
 
-    distance = hypot(delta_x, delta_y)
+    distance = hypot(delta_x_cm, delta_y_cm)
     #print("Distance I need to travel = ", distance)
     #common.move_cm(distance, lambda delta: (points.move(delta), points.fuse_sonar(common.get_sonar_cm()), drawParticles(points)))
     print("Moving distance ", distance)
@@ -124,23 +118,20 @@ def navigateToWaypoint(target_x_metres, target_y_metres):
 
     #points.fuse_sonar(sonar_reading)
     #new_mean = points.get_mean()
-    angle = angle + delta_angle
-    x_cm = x_cm + delta_x
-    y_cm = y_cm + delta_y
-   # angle = normalise_rads(new_mean.angle)
+    angle_radians = angle_radians + delta_angle_radians
+    x_cm = x_cm + delta_x_cm
+    y_cm = y_cm + delta_y_cm
+   # angle_radians = normalise_rads(new_mean.angle)
    # x_cm = new_mean.x
    # y_cm = new_mean.y
    # print(x_cm, y_cm)
    # print()
 
-    #drawLineTuple((x_cm-10, y_cm + 10, x_cm + 10, y_cm - 10))
-    #drawLineTuple((x_cm+10, y_cm + 10, x_cm - 10, y_cm - 10))
-    #drawParticlesStateful([(x_cm,y_cm,1,1)])
     #drawParticlesStateful(points)
 
-#drawCoordinateFrame(1)
-#drawWalls()
-#drawPath()
+
+def navigateToWaypoint(target_x_metres, target_y_metres):
+    navigate_to_waypoint_cm(target_x_metres * 100, target_y_metres * 100)
 
 #i = 0
 #try:

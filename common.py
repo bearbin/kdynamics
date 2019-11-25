@@ -1,6 +1,7 @@
 import time
 import math
 from enum import Enum
+from rendering import drawWalls, drawPath
 
 # import brickpi333 as brickpi3
 # BP = brickpi3.BrickPi333()
@@ -260,3 +261,8 @@ def bump_restore_and_rotate():
     turn_left(180)
     print("FINISHED BUMP RESTORE")
 
+
+##### MISC #####
+
+def normalise_rads(angle):
+  return atan2(sin(angle), cos(angle))

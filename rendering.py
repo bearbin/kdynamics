@@ -15,6 +15,8 @@ SCALING_FACTOR_CM = MAX_POINT_Y / COORDINATE_FRAME_CM
 DRAW_OFFSET_X = 10
 DRAW_OFFSET_Y = 220
 
+CROSS_SIZE = 10
+
 state = []
 
 def offsetCoordinatesTuple(coords):
@@ -40,29 +42,34 @@ def drawWalls():
     drawLineTuple((210,0,0,0))        # h
 
 def drawPath():
-# Definitions of walls
-# a: O to A
-# b: A to B
-# c: C to D
-# d: D to E
-# e: E to F
-# f: F to G
-# g: G to H
-# h: H to O
-    drawLineTuple((84,30,180, 30))        # a
-    drawLineTuple((180,30,180,54))     # b
-    drawLineTuple((180, 54, 138, 54))    # c
-    drawLineTuple((138, 54, 138, 168))   # d
-    drawLineTuple((138,168,114, 168))   # e
-    drawLineTuple((114,168,114,84))    # f
-    drawLineTuple((114,84,84, 84))     # g
-    drawLineTuple((84,84,84,30))        # h
+    drawLineTuple((84,30,180, 30))     
+    drawLineTuple((180,30,180,54))     
+    drawLineTuple((180, 54, 138, 54))  
+    drawLineTuple((138, 54, 138, 168)) 
+    drawLineTuple((138,168,114, 168))  
+    drawLineTuple((114,168,114,84))    
+    drawLineTuple((114,84,84, 84))     
+    drawLineTuple((84,84,84,30))       
+
+
+def drawWorld():
+    #drawCoordinateFrame(1)
+    drawWalls()
+    # drawPath()
+
+
+def drawCross(x, y):
+    drawLineTuple((x - CROSS_SIZE, y + CROSS_SIZE, x + CROSS_SIZE, y - CROSS_SIZE))
+    drawLineTuple((x + CROSS_SIZE, y + CROSS_SIZE, x - CROSS_SIZE, y - CROSS_SIZE))
+
 
 def drawLineTupleRaw(line):
     print("drawLine:" + str(line))
 
+
 def drawLineXYRaw(x0,y0,x1,y1):
     drawLineTuple((x0,y0,x1,y1), offset=False)
+
 
 def drawLineTuple(line, offset=True):
     if offset:
@@ -71,11 +78,14 @@ def drawLineTuple(line, offset=True):
         line = (offsetStart[0], offsetStart[1], offsetEnd[0], offsetEnd[1])
     drawLineTupleRaw(tuple([x * SCALING_FACTOR_CM for x in line]))
 
+
 def drawLineXY(x0,y0,x1,y1):
     drawLineTuple((x0,y0,x1,y1))
 
+
 def drawParticlesRaw(particles):
     print("drawParticles:" + str(particles))
+
 
 # [(x, y, theta, weight)]
 def drawParticles(particles):
