@@ -47,7 +47,7 @@ def _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_enco
 
   return max(abs(right_stop - right), abs(left_stop - left)) / abs(delta_encoder)
 
-def _move(scaling, mm, turn, delta_fun):
+def _move(scaling, mm, turn, delta_fun, bump_check):
   # -1 factor because big wheels at the front!
   delta_encoder = (-1.0) * scaling * mm
   left_delta_encoder = -delta_encoder if turn else delta_encoder
@@ -67,6 +67,15 @@ def _move(scaling, mm, turn, delta_fun):
   right_stop = abs(right_stop_threshold)
 
   while True:
+    if bump_check:
+        print(bump_check)
+        bump_status = check_bump_bool()
+        if bump_status:
+          print('wtf')
+          BP.set_motor_dps(LEFT_WHEEL, 0)
+          BP.set_motor_dps(RIGHT_WHEEL, 0)
+          bump_restore_and_rotate()
+          break
     left = abs(get_motor_position(LEFT_WHEEL))
     right = abs(get_motor_position(RIGHT_WHEEL))
 
@@ -107,11 +116,14 @@ def _move(scaling, mm, turn, delta_fun):
   BP.set_motor_dps(LEFT_WHEEL, 0)
   BP.set_motor_dps(RIGHT_WHEEL, 0)
 
-def move(mm, delta_fun = lambda x: x):
-  _move(ScalingFactors.movement, mm, False, delta_fun)
+def move(mm, delta_fun = lambda x: x, check_bumps = False):
+  _move(ScalingFactors.movement, mm, False, delta_fun, check_bumps)
 
 def move_cm(cm, delta_fun = lambda x: x):
   move(cm * 10, delta_fun)
+
+def move_cm_check_bumps(cm, delta_fun = lambda x: x):
+  move(cm * 10, delta_fun, True)
 
 def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
@@ -122,7 +134,7 @@ def _threshold(degrees):
   return max(1, min(3.5, 1/(math.sqrt(abs(degrees))) * 60 * math.pi))
 
 def turn_left(degrees, delta_fun = lambda x: x):
-  _move(ScalingFactors.rotation, degrees, True, delta_fun)
+  _move(ScalingFactors.rotation, degrees, True, delta_fun, False)
 
 def _turn_left(degrees):
   if degrees == 0:
@@ -157,6 +169,9 @@ def _set_limit_at(left_percentage, right_percentage):
 
   BP.set_motor_limits(LEFT_WHEEL, left_percentage)
   BP.set_motor_limits(RIGHT_WHEEL, right_percentage)
+
+def set_sensors():
+  _set_sensors()
 
 def turn_sonar_left(degrees):
   curr_angle = get_motor_position(SONAR_MOTOR)
@@ -227,27 +242,13 @@ def check_bump():
             print("Error while checking bump")
     return BumpStatus.NONE
 
+def check_bump_bool():
+  return check_bump() != BumpStatus.NONE
+
 BUMP_BACKUP_DISTANCE_CM = 10
 
 def bump_restore_and_rotate():
     move_cm(-BUMP_BACKUP_DISTANCE_CM)
     turn_left(180)
+    print("FINISHED BUMP RESTORE")
 
-# BP.set_sensor_type(BP.PORT_1, BP.SENSOR_TYPE.TOUCH)
-# 
-# try:
-#     while True:
-#         # read and display the sensor value
-#         # BP.get_sensor retrieves a sensor value.
-#         # BP.PORT_1 specifies that we are looking for the value of sensor port 1.
-#         # BP.get_sensor returns the sensor value (what we want to display).
-#         try:
-#             value = BP.get_sensor(BP.PORT_1)
-#             print(value)
-#         except brickpi3.SensorError as error:
-#             print(error)
-#         
-#         time.sleep(0.02)  # delay for 0.02 seconds (20ms) to reduce the Raspberry Pi CPU load.
-# 
-# except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
-#     BP.reset_all()        # Unconfigure the sensors, disable the motors, and restore the LED to the control of the BrickPi3 firmware.
