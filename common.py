@@ -1,15 +1,17 @@
 import time
-# import brickpi333 as brickpi3
-import brickpi3
 import math
 from enum import Enum
 
+# import brickpi333 as brickpi3
 # BP = brickpi3.BrickPi333()
+
+import brickpi3
 BP = brickpi3.BrickPi3()
 
-SONAR_PORT = BP.PORT_3
-SONAR_INITIALISED = False
 
+##### CONSTANTS #####
+
+SONAR_PORT = BP.PORT_3
 PORT_A = BP.PORT_A
 PORT_B = BP.PORT_B
 PORT_C = BP.PORT_C
@@ -18,28 +20,72 @@ LEFT_WHEEL = PORT_C
 SONAR_MOTOR = PORT_A
 LEFT_BUMPER = BP.PORT_3
 RIGHT_BUMPER = BP.PORT_2
+BUMP_CHECK_TRIES = 10
+BUMP_BACKUP_DISTANCE_CM = 10
 
+class BumpStatus(Enum):
+  NONE = 0
+  RIGHT = 1
+  LEFT = 2
+  BOTH = 3
 
 class ScalingFactors:
    movement = 1.115 * 360 / 229
    rotation = 1.155 * 360 / 229
 
 
-# LIMIT 25
-  # rotation = 1.13 * 360 / 229
-  # almost perfect
-  # almost perfect
+##### RESETTING #####
 
-  # rotation = 1.15 * 360 / 229
-  # overrotation a bit (2cm)   
-  # overrotation a bit (2cm)   
-  # overrotation a bit (1cm)   
+def total_reset():
+    print("TOTAL RESET")
+    BP.reset_all()
+    BP.reset_motor_encoder(PORT_B)
+    BP.reset_motor_encoder(PORT_C)
+    BP.reset_motor_encoder(PORT_A)
+    BP.reset_motor_encoder(SONAR_PORT)
+
+def reset_encoders():
+    BP.reset_motor_encoder(PORT_B)
+    BP.reset_motor_encoder(PORT_C)
+
+
+##### GETTERS #####
 
 def get_motor_power(BP, port):
     return BP.get_motor_status(port)[1]
 
 def get_motor_position(port):
   return BP.get_motor_status(port)[2]
+
+
+##### INITIALIZATION #####
+
+def _set_limit_at(left_percentage, right_percentage):
+  if left_percentage < 20:
+    left_percentage = 20
+
+  if right_percentage < 20:
+    right_percentage = 20
+
+  BP.set_motor_limits(LEFT_WHEEL, left_percentage)
+  BP.set_motor_limits(RIGHT_WHEEL, right_percentage)
+
+def set_sensors():
+  _set_sensors()
+
+def _set_sensors():
+  BP.set_sensor_type(BP.PORT_1 + BP.PORT_2 + BP.PORT_3 + BP.PORT_4, BP.SENSOR_TYPE.NONE)
+  time.sleep(0.3)
+
+  BP.set_sensor_type(SONAR_PORT, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+  time.sleep(0.3)
+
+  for bumper in [LEFT_BUMPER, RIGHT_BUMPER]:
+    BP.set_sensor_type(bumper, BP.SENSOR_TYPE.TOUCH)
+    time.sleep(0.3)
+
+
+##### MOVEMENT #####
 
 def _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_encoder):
   if abs(delta_encoder) < 0.1:
@@ -129,6 +175,9 @@ def move_with_speed(speed):
   BP.set_motor_dps(PORT_B, speed)
   BP.set_motor_dps(PORT_C, speed)
 
+
+##### TURNING #####
+
 # Idea is that for tiny turns, we have a threshold between 1 and 3 degrees
 def _threshold(degrees):
   return max(1, min(3.5, 1/(math.sqrt(abs(degrees))) * 60 * math.pi))
@@ -160,34 +209,8 @@ def _turn_left(degrees):
     continue
   print("Turn complete")
 
-def _set_limit_at(left_percentage, right_percentage):
-  if left_percentage < 20:
-    left_percentage = 20
 
-  if right_percentage < 20:
-    right_percentage = 20
-
-  BP.set_motor_limits(LEFT_WHEEL, left_percentage)
-  BP.set_motor_limits(RIGHT_WHEEL, right_percentage)
-
-def set_sensors():
-  _set_sensors()
-
-def turn_sonar_left(degrees):
-  curr_angle = get_motor_position(SONAR_MOTOR)
-  BP.set_motor_position(SONAR_MOTOR, curr_angle + degrees)
-
-def _set_sensors():
-  BP.set_sensor_type(BP.PORT_1 + BP.PORT_2 + BP.PORT_3 + BP.PORT_4, BP.SENSOR_TYPE.NONE)
-  time.sleep(0.3)
-
-  BP.set_sensor_type(SONAR_PORT, BP.SENSOR_TYPE.NXT_ULTRASONIC)
-  time.sleep(0.3)
-
-  for bumper in [LEFT_BUMPER, RIGHT_BUMPER]:
-    BP.set_sensor_type(bumper, BP.SENSOR_TYPE.TOUCH)
-    time.sleep(0.3)
-
+##### SONAR #####
 
 def get_sonar_cm():
   while True:
@@ -202,25 +225,12 @@ def get_sonar_cm():
 def get_sonar_mm():
     return get_sonar_cm() * 10
 
-def total_reset():
-    print("TOTAL RESET")
-    BP.reset_all()
-    BP.reset_motor_encoder(PORT_B)
-    BP.reset_motor_encoder(PORT_C)
-    BP.reset_motor_encoder(PORT_A)
-    BP.reset_motor_encoder(SONAR_PORT)
+def turn_sonar_left(degrees):
+  curr_angle = get_motor_position(SONAR_MOTOR)
+  BP.set_motor_position(SONAR_MOTOR, curr_angle + degrees)
 
-def reset_encoders():
-    BP.reset_motor_encoder(PORT_B)
-    BP.reset_motor_encoder(PORT_C)
 
-BUMP_CHECK_TRIES = 10
-
-class BumpStatus(Enum):
-  NONE = 0
-  RIGHT = 1
-  LEFT = 2
-  BOTH = 3
+##### BUMPING #####
 
 def check_bump():
     for i in range(BUMP_CHECK_TRIES):
@@ -244,8 +254,6 @@ def check_bump():
 
 def check_bump_bool():
   return check_bump() != BumpStatus.NONE
-
-BUMP_BACKUP_DISTANCE_CM = 10
 
 def bump_restore_and_rotate():
     move_cm(-BUMP_BACKUP_DISTANCE_CM)
