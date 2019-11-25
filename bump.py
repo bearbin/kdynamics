@@ -4,15 +4,13 @@ import time
 import sys
 from common import *
 
-MM_DISTANCE = float(sys.argv[1])
-
 reset_encoders()
 
-
 try:
-    while True:
-        check_bump()
-finally:
+  while True:
+    bumped = check_bump()
+    if bumped != BumpStatus.NONE:
+        print(bumped)
+except KeyboardInterrupt:
 	total_reset()
 
-print("Move complete")

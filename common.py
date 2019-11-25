@@ -1,8 +1,11 @@
 import time
-import brickpi333 as brickpi3
+# import brickpi333 as brickpi3
+import brickpi3
 import math
+from enum import Enum
 
-BP = brickpi3.BrickPi333()
+# BP = brickpi3.BrickPi333()
+BP = brickpi3.BrickPi3()
 
 SONAR_PORT = BP.PORT_3
 SONAR_INITIALISED = False
@@ -159,20 +162,17 @@ def turn_sonar_left(degrees):
   curr_angle = get_motor_position(SONAR_MOTOR)
   BP.set_motor_position(SONAR_MOTOR, curr_angle + degrees)
 
-def _set_bumper_sensors():
-  return False
-  #for bumper in [LEFT_BUMPER, RIGHT_BUMPER]:
-  #BP.set_sensor_type(bumper, BP.SENSOR_TYPE.TOUCH)
-
-def _set_sonar_sensor():
+def _set_sensors():
   BP.set_sensor_type(BP.PORT_1 + BP.PORT_2 + BP.PORT_3 + BP.PORT_4, BP.SENSOR_TYPE.NONE)
   time.sleep(0.3)
+
   BP.set_sensor_type(SONAR_PORT, BP.SENSOR_TYPE.NXT_ULTRASONIC)
-  _set_bumper_sensors()
   time.sleep(0.3)
 
-def _set_sensors():
-  _set_sonar_sensor()
+  for bumper in [LEFT_BUMPER, RIGHT_BUMPER]:
+    BP.set_sensor_type(bumper, BP.SENSOR_TYPE.TOUCH)
+    time.sleep(0.3)
+
 
 def get_sonar_cm():
   while True:
@@ -181,13 +181,14 @@ def get_sonar_cm():
       measurements.sort()
       return measurements[2] # Return the median distance
     except (IOError, brickpi3.SensorError):
-      print("Got an error")
-      _set_sonar_sensor()
+      print("Got an error while reading sonar")
+      _set_sensors()
 
 def get_sonar_mm():
     return get_sonar_cm() * 10
 
 def total_reset():
+    print("TOTAL RESET")
     BP.reset_all()
     BP.reset_motor_encoder(PORT_B)
     BP.reset_motor_encoder(PORT_C)
@@ -198,19 +199,33 @@ def reset_encoders():
     BP.reset_motor_encoder(PORT_B)
     BP.reset_motor_encoder(PORT_C)
 
+BUMP_CHECK_TRIES = 10
+
+class BumpStatus(Enum):
+  NONE = 0
+  RIGHT = 1
+  LEFT = 2
+  BOTH = 3
+
 def check_bump():
-    tries = 10
-    for i in range(tries):
+    for i in range(BUMP_CHECK_TRIES):
         try:
             value_left = BP.get_sensor(LEFT_BUMPER)
             value_right = BP.get_sensor(RIGHT_BUMPER)
-            print('bump readings:')
-            print(value_left)
-            print(value_right)
-            return True
-        except brickpi3.SensorError as error:
-            print(error)
-    return False
+
+        # print('bump readings (l/r):')
+        #    print(value_left)
+        #    print(value_right)
+
+            if value_left:
+                return BumpStatus.BOTH if value_right else BumpStatus.LEFT
+            if value_right:
+                return BumpStatus.BOTH if value_left else BumpStatus.RIGHT
+            return BumpStatus.NONE
+        except (IOError, brickpi3.SensorError):
+            _set_sensors()
+            print("Error while checking bump")
+    return BumpStatus.NONE
 
 BUMP_BACKUP_DISTANCE_CM = 10
 
