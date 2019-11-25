@@ -7,6 +7,7 @@ from math import cos, sin, radians, acos, sqrt, hypot
 
 HUXLEY_MAP = Map.draw_robot_wars_map()
 STD_DEV = 2.5
+PRE_NORM_FACTOR = 0.5
 ROBUSTNESS_K = 0.04
 MAX_SENSIBLE_SONAR_ANGLE = radians(45)
 
@@ -22,12 +23,11 @@ def get_dist_to_wall(x, y, theta, wall):
   return dist
 
 def intersects_wall(x, y, wall):
-  u = 0.01  # Wall epsilon
   (ax, ay, bx, by) = wall
-  left_x = min(ax, bx) - u
-  right_x = max(ax, bx) + u
-  top_y = max(ay, by) + u
-  bottom_y = min(ay, by) - u
+  left_x = min(ax, bx)
+  right_x = max(ax, bx)
+  top_y = max(ay, by)
+  bottom_y = min(ay, by)
 
   return left_x <= x and x <= right_x and bottom_y <= y and y <= top_y
 

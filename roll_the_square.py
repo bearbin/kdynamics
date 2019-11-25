@@ -6,7 +6,6 @@ from localisation import *
 from common import *
 
 reset_encoders()
-set_limit_at(25)
 drawCoordinateFrame(1)
 
 points = PointCloud(0, 0, 0)

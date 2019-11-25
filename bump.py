@@ -8,6 +8,11 @@ MM_DISTANCE = float(sys.argv[1])
 
 reset_encoders()
 
-move(MM_DISTANCE)
+
+try:
+    while True:
+        check_bump()
+finally:
+	total_reset()
 
 print("Move complete")
