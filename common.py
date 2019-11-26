@@ -6,10 +6,6 @@ from rendering import drawWalls, drawPath
 import brickpi333 as brickpi3
 BP = brickpi3.BrickPi333()
 
-# import brickpi3
-# BP = brickpi3.BrickPi3()
-
-
 ##### CONSTANTS #####
 
 SONAR_PORT = BP.PORT_3
@@ -34,29 +30,29 @@ class BumpStatus(Enum):
   BOTH = 3
 
 class ScalingFactors:
-   movement = 1.115 * 360 / 229
-   rotation = 1.155 * 360 / 229
+  movement = 1.115 * 360 / 229
+  rotation = 1.155 * 360 / 229
 
 
 ##### RESETTING #####
 
 def total_reset():
-    print("TOTAL RESET")
-    BP.reset_all()
-    BP.reset_motor_encoder(PORT_B)
-    BP.reset_motor_encoder(PORT_C)
-    BP.reset_motor_encoder(PORT_A)
-    BP.reset_motor_encoder(SONAR_PORT)
+  print("TOTAL RESET")
+  BP.reset_all()
+  BP.reset_motor_encoder(PORT_B)
+  BP.reset_motor_encoder(PORT_C)
+  BP.reset_motor_encoder(PORT_A)
+  BP.reset_motor_encoder(SONAR_PORT)
 
 def reset_encoders():
-    BP.reset_motor_encoder(PORT_B)
-    BP.reset_motor_encoder(PORT_C)
+  BP.reset_motor_encoder(PORT_B)
+  BP.reset_motor_encoder(PORT_C)
 
 
 ##### GETTERS #####
 
 def get_motor_power(BP, port):
-    return BP.get_motor_status(port)[1]
+  return BP.get_motor_status(port)[1]
 
 def get_motor_position(port):
   return BP.get_motor_status(port)[2]
@@ -131,13 +127,13 @@ def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = l
     right = abs(get_motor_position(RIGHT_WHEEL))
 
     if bump_check:
-        bump_status = check_bump_bool()
-        if bump_status:
-          print('BUMP DETECTED')
-          BP.set_motor_dps(LEFT_WHEEL, 0)
-          BP.set_motor_dps(RIGHT_WHEEL, 0)
-          bump_restore_and_rotate()
-          return (left - initial_left) / scaling / 10 - BUMP_BACKUP_DISTANCE_CM
+      bump_status = check_bump_bool()
+      if bump_status:
+        print('BUMP DETECTED')
+        BP.set_motor_dps(LEFT_WHEEL, 0)
+        BP.set_motor_dps(RIGHT_WHEEL, 0)
+        bump_restore_and_rotate()
+        return (left - initial_left) / scaling / 10 - BUMP_BACKUP_DISTANCE_CM
 
     prev_difference = difference
     difference = _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_encoder)
@@ -227,7 +223,7 @@ def _turn_left(degrees):
 
 
 def turn_left_radians(angle_radians):
-    turn_left(math.degrees(angle_radians))
+  turn_left(math.degrees(angle_radians))
 
 
 ##### SONAR #####
@@ -243,7 +239,7 @@ def get_sonar_cm():
       _set_sensors()
 
 def get_sonar_mm():
-    return get_sonar_cm() * 10
+  return get_sonar_cm() * 10
 
 def turn_sonar_left(degrees):
   curr_angle = get_motor_position(SONAR_MOTOR)
@@ -253,32 +249,27 @@ def turn_sonar_left(degrees):
 ##### BUMPING #####
 
 def check_bump():
-    for i in range(BUMP_CHECK_TRIES):
-        try:
-            value_left = BP.get_sensor(LEFT_BUMPER)
-            value_right = BP.get_sensor(RIGHT_BUMPER)
-
-        # print('bump readings (l/r):')
-        #    print(value_left)
-        #    print(value_right)
-
-            if value_left:
-                return BumpStatus.BOTH if value_right else BumpStatus.LEFT
-            if value_right:
-                return BumpStatus.BOTH if value_left else BumpStatus.RIGHT
-            return BumpStatus.NONE
-        except (IOError, brickpi3.SensorError):
-            _set_sensors()
-            print("Error while checking bump")
-    return BumpStatus.NONE
+  for i in range(BUMP_CHECK_TRIES):
+    try:
+      value_left = BP.get_sensor(LEFT_BUMPER)
+      value_right = BP.get_sensor(RIGHT_BUMPER)
+      if value_left:
+        return BumpStatus.BOTH if value_right else BumpStatus.LEFT
+      if value_right:
+        return BumpStatus.BOTH if value_left else BumpStatus.RIGHT
+      return BumpStatus.NONE
+    except (IOError, brickpi3.SensorError):
+      _set_sensors()
+      print("Error while checking bump")
+  return BumpStatus.NONE
 
 def check_bump_bool():
   return check_bump() != BumpStatus.NONE
 
 def bump_restore_and_rotate():
-    move_cm(-BUMP_BACKUP_DISTANCE_CM)
-    turn_left(180)
-    print("FINISHED BUMP RESTORE")
+  move_cm(-BUMP_BACKUP_DISTANCE_CM)
+  turn_left(180)
+  print("FINISHED BUMP RESTORE")
 
 
 ##### MISC #####

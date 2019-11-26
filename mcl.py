@@ -11,17 +11,17 @@ ROBUSTNESS_K = 0.04
 MAX_SENSIBLE_SONAR_ANGLE = radians(45)
 
 # gets distance to wall
-def get_dist_to_wall(x, y, theta, wall):
+def get_dist_to_wall(x_cm, y_cm, theta_rad, wall):
   (ax, ay, bx, by) = wall
 
-  numerator = ((by - ay) * (ax - x) - (bx - ax) * (ay - y))
-  denominator = ((by - ay) * cos(theta) - (bx - ax) * sin(theta))
+  numerator = ((by - ay) * (ax - x_cm) - (bx - ax) * (ay - y_cm))
+  denominator = ((by - ay) * cos(theta_rad) - (bx - ax) * sin(theta_rad))
   dist = numerator / denominator if not denominator == 0 else -1
 
   #print("The wall is ", wall, " with distance ", dist)
   return dist
 
-def intersects_wall(x, y, wall):
+def intersects_wall(x_cm, y_cm, wall):
   u = 0.01  # Wall epsilon
   (ax, ay, bx, by) = wall
   left_x = min(ax, bx) - u
@@ -29,14 +29,14 @@ def intersects_wall(x, y, wall):
   top_y = max(ay, by) + u
   bottom_y = min(ay, by) - u
 
-  return left_x <= x and x <= right_x and bottom_y <= y and y <= top_y
+  return left_x <= x_cm and x_cm <= right_x and bottom_y <= y_cm and y_cm <= top_y
 
-def find_closest_wall(x, y, theta):
+def find_closest_wall(x_cm, y_cm, theta_rad):
   # Get list of (wall, distance) pairs
-  wms = [(wall, get_dist_to_wall(x, y, theta, wall)) for wall in HUXLEY_MAP.walls]
+  wms = [(wall, get_dist_to_wall(x_cm, y_cm, theta_rad, wall)) for wall in HUXLEY_MAP.walls]
 
   # Filter out walls behind or to the side of us
-  filtered_wms = filter(lambda wm: wm[1] >= 0 and intersects_wall(x + wm[1] * cos(theta), y + wm[1] * sin(theta), wm[0]), wms) 
+  filtered_wms = filter(lambda wm: wm[1] >= 0 and intersects_wall(x_cm + wm[1] * cos(theta_rad), y_cm + wm[1] * sin(theta_rad), wm[0]), wms)
   assert(filtered_wms)
 
   l = list(filtered_wms)
@@ -51,16 +51,28 @@ def calculate_pz(m, z):
   gaussian = math.exp((-(z-m)**2) / (2 * (STD_DEV ** 2)))
   return gaussian + ROBUSTNESS_K
 
-def is_incidence_angle_acceptable(wall, theta):
+def is_incidence_angle_acceptable(wall, theta_rad):
   (ax, ay, bx, by) = wall
   dy = ay - by
   dx = bx - ax
-  numerator = cos(theta) * dy + sin(theta) * dx
+  numerator = cos(theta_rad) * dy + sin(theta_rad) * dx
   denominator = hypot(dy, dx)                          # sqrt((ay - by)**2 + (bx - ax)**2)
   return acos(numerator / denominator) <= MAX_SENSIBLE_SONAR_ANGLE
 
-def calculate_likelihood(x, y, degrees, z):
-  (_, m) = find_closest_wall(x, y, radians(degrees))
+def calculate_likelihood(x_cm, y_cm, degrees, z):
+  (_, m) = find_closest_wall(x_cm, y_cm, radians(degrees))
   pz = calculate_pz(m, z)
   return pz
 
+def get_expected_signature(x_cm, y_cm, theta_rad, min_deg, max_deg, step_deg):
+  angles = range(min_deg, max_deg, step_deg)
+  ret = [(a, find_closest_wall(x_cm, y_cm, theta_rad + radians(a))[1]) for a in angles]
+
+def get_anomalous_reading(expected_signature, actual_signature):
+  # TODO: Ensure surrounding values are also similarly offset.
+  assert(len(expected_signature) == len(actual_signature))
+  deviations = tuple(map(
+    lambda sigs: abs(sigs[0][1] - sigs[1][1])
+    zip(expected_signature, actual_signature)
+  ))
+  return actual_signature[deviations.index(max(deviations))]
