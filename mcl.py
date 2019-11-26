@@ -64,3 +64,15 @@ def calculate_likelihood(x_cm, y_cm, degrees, z):
   pz = calculate_pz(m, z)
   return pz
 
+def get_expected_signature(x_cm, y_cm, theta_rad, min_deg, max_deg, step_deg):
+  angles = range(min_deg, max_deg, step_deg)
+  ret = [(a, find_closest_wall(x_cm, y_cm, theta_rad + radians(a))[1]) for a in angles]
+
+def get_anomalous_reading(expected_signature, actual_signature):
+  # TODO: Ensure surrounding values are also similarly offset.
+  assert(len(expected_signature) == len(actual_signature))
+  deviations = tuple(map(
+    lambda sigs: abs(sigs[0][1] - sigs[1][1])
+    zip(expected_signature, actual_signature)
+  ))
+  return actual_signature[deviations.index(max(deviations))]
