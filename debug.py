@@ -29,7 +29,7 @@ def DEBUG_print_delta_state_rad(delta_x_cm, delta_y_cm, delta_angle_rad):
     print("I need to rotate by = ", angle_description(delta_angle_rad))
 
 
-def DEBUG_print_sonar_readins(sonar_readings):
+def DEBUG_print_sonar_readings(sonar_readings):
     print()
     print()
     print("+++ SONAR SWEEP READINGS")

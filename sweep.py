@@ -3,9 +3,12 @@
 import time
 from common import *
 from waypoint import *
+from mcl import get_expected_signature
 from math import radians
+from debug import *
 
 SONAR_ROTATION_WAIT = 0.6
+SONAR_ROTATION_WAIT_SMALL = 0.1
 SWEEP_STEP_DEGREES = 5
 
 class SweepData:
@@ -21,13 +24,13 @@ class SweepData:
 
 def measure_sonar():
     reading = get_sonar_cm()
-    print("Sonar reading was " + str(readings))
+    print("Sonar reading was " + str(reading))
     time.sleep(0.02)
     return reading
 
 
 def correct_sonar_turn(turn):
-    return turn * 9 / 7.5
+    return turn * 11 / 7.5
 
 
 BP.set_motor_limits(PORT_A, 25)
@@ -35,7 +38,8 @@ BP.set_motor_limits(PORT_A, 25)
 
 def SONAR_rotate_left_degrees(angle_degrees):
     turn_sonar_left(correct_sonar_turn(angle_degrees))
-    time.sleep(SONAR_ROTATION_LEFT)
+    wait_time = SONAR_ROTATION_WAIT if angle_degrees > 10 else SONAR_ROTATION_WAIT_SMALL
+    time.sleep(wait_time)
 
 
 def SONAR_record_into(readings):
@@ -44,7 +48,7 @@ def SONAR_record_into(readings):
 
 
 def compute_sweep_steps_num(sweep_angle_degrees, sweep_step_degrees):
-    return sweep_angle_degrees / sweep_step_degrees
+    return int(sweep_angle_degrees / sweep_step_degrees)
 
 
 def SONAR_perform_sweep_and_get_readings(sweep_angle_degrees):
@@ -54,17 +58,22 @@ def SONAR_perform_sweep_and_get_readings(sweep_angle_degrees):
     for angle_degrees in range(sweep_steps_num):
         SONAR_record_into(readings)
         SONAR_rotate_left_degrees(-SWEEP_STEP_DEGREES)
-    record_sonar_into(readings)
+    SONAR_record_into(readings)
 
     return readings
 
 
-def compute_estimated_ideal_sonar_readings():
-    return bottleless_c
+def compute_estimated_ideal_sonar_readings(sweep_data):
+    pos = get_robot_position()
+    sweep_angle = sweep_data.SWEEP_ANGLE
+    return get_expected_signature(pos[0], pos[1], pos[2], -sweep_angle, sweep_angle, SWEEP_STEP_DEGREES)
 
 
-def find_bottle_angle(actual_sonar_readings):
-    estimated_ideal_sonar_readings = compute_estimated_ideal_sonar_readings()
+def find_bottle_angle(actual_sonar_readings, sweep_data):
+    estimated_ideal_sonar_readings = compute_estimated_ideal_sonar_readings(sweep_data)
+
+    print(estimated_ideal_sonar_readings)
+
     # TODO: Diff algorithm
     return 0
 
@@ -78,7 +87,7 @@ def SONAR_perform_sweep_and_get_target_angle_radians(sweep_data):
 
   DEBUG_print_sonar_readings(sonar_sweep_readings)
 
-  return find_bottle_angle(sonar_sweep_readings)
+  return find_bottle_angle(sonar_sweep_readings, sweep_data)
 
 
 def SONAR_find_angle_to_rotate_to_target_radians(waypoint_id):

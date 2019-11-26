@@ -138,3 +138,7 @@ def ROBOT_go_to_waypoint(waypoint):
 def ROBOT_do_waypoints(waypoints_cm):
     for waypoint in waypoints_cm:
         ROBOT_go_to_waypoint(waypoint)
+
+
+def get_robot_position():
+    return (x_cm, y_cm, angle_radians)

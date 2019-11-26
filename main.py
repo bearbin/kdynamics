@@ -69,7 +69,7 @@ def SONAR_locate_target(waypoint_id):
     #
     #
     #
-    return -find_angle_rotation_robot_left(waypoint_id)
+    return -SONAR_find_angle_to_rotate_to_target_radians(waypoint_id)
 
 
 def ROBOT_seek_and_destroy(path_info):
