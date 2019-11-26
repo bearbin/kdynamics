@@ -3,15 +3,21 @@
 import time
 from common import *
 from waypoint import *
+from math import radians
 
-bottleless = [87, 87, 87, 87, 87, 87, 87, 88, 88, 88, 89, 165, 165, 164, 164, 146, 145, 144, 143, 143, 143, 142, 142, 142, 142, 143, 143, 144, 146, 201, 201, 202, 203, 259, 259, 259, 259, 175, 126, 125, 124, 124, 88, 89, 88]
+# Metres
+scan_waypoint_a = (0.90, 0.30)
+scan_waypoint_b = (0.90, 0.70)
+scan_waypoint_c = (0.42, 0.30)
 
-#write specific waypoint
-bottleless_c = [51, 51, 51, 51, 51, 51, 52, 53, 53, 53, 53, 53, 54, 55, 97, 96, 95, 94, 93, 93, 93, 92, 92, 92, 92, 92, 92, 93, 93, 93, 94, 100, 100, 99, 100, 101, 102, 103, 166, 164, 164, 163, 163, 162, 162]
+# Sigs are: (start angle, dists at 5 degree intervals)
 
 bottleless_a = []
 
 bottleless_b = []
+
+# TODO: write specific waypoint
+c_signature = (180, 0, [51, 51, 51, 51, 51, 51, 52, 53, 53, 53, 53, 53, 54, 55, 97, 96, 95, 94, 93, 93, 93, 92, 92, 92, 92, 92, 92, 93, 93, 93, 94, 100, 100, 99, 100, 101, 102, 103, 166, 164, 164, 163, 163, 162, 162])
 
 def measure_sonar():
     readings = get_sonar_cm()
@@ -21,47 +27,46 @@ def measure_sonar():
 
 BP.set_motor_limits(PORT_A, 25)
 
-def find_bottle(bottleless):
-  curr_angle = 180
+# Returns tuple (avg absolute radians angle to bottle, avg distance to bottle)
+def find_bottle(sonar_angle, signature):
+  (start_angle, end_angle, bottleless_dists) = signature
 
-  signature = []
+  turn_sonar_left(start_angle - sonar_angle)
+  sonar_angle = start_angle
+
+  readings = []
 
   reading = measure_sonar()
-  signature.append(reading)
+  readings.append(reading)
 
-  while curr_angle > 0:
+  while sonar_angle > end_angle:
      turn_sonar_left(-5)
      time.sleep(0.2)
-     curr_angle -= 5 * 7.5 / 9
+     sonar_angle -= 5 * 7.5 / 9
      reading = measure_sonar()
-     signature.append(reading)
+     readings.append(reading)
 
-  print("Bottleless is ", bottleless)
+  print("Bottleless is ", bottleless_dists)
   print()
-  print("Signature is ", signature)
+  print("Readings are ", readings)
 
   waypoints = []
   threshold = 15
-  minimum_measurement = 30
+  minimum_measurement = 20
 
-  for i in range(len(signature)):
-    if signature[i] < minimum_measurement:
+  for i in range(len(readings)):
+    if readings[i] < minimum_measurement:
       continue
-    difference = bottleless[i] - signature[i]
+    difference = bottleless_dists[i] - readings[i]
     if difference >= threshold:
-      waypoints.append((180 - i * 5 * 7.5 / 9, signature[i]))
+      waypoints.append((180 - i * 5 * 7.5 / 9, readings[i]))
 
   print("Waypoints index are ", waypoints)
   bottle_pos = sorted(waypoints)[round(len(waypoints)/2)]
   print("Bottle at : ", bottle_pos)
+  bottle_pos[0] = radians(bottle_pos[0])
 
   return bottle_pos
-
-start_waypoint_c_x = 0.42 
-start_waypoint_c_y = 0.30
-
-navigateToWaypoint(start_waypoint_c_x, start_waypoint_c_y)
-time.sleep(1)
 
 (bottle_angle, bottle_dist) = find_bottle(bottleless_c)
 turn_left(-bottle_angle)    # TODO: check relative
