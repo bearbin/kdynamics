@@ -3,11 +3,11 @@ import math
 from enum import Enum
 from rendering import drawWalls, drawPath
 
-# import brickpi333 as brickpi3
-# BP = brickpi3.BrickPi333()
+import brickpi333 as brickpi3
+BP = brickpi3.BrickPi333()
 
-import brickpi3
-BP = brickpi3.BrickPi3()
+# import brickpi3
+# BP = brickpi3.BrickPi3()
 
 
 ##### CONSTANTS #####
@@ -19,7 +19,7 @@ PORT_C = BP.PORT_C
 RIGHT_WHEEL = PORT_B
 LEFT_WHEEL = PORT_C
 SONAR_MOTOR = PORT_A
-LEFT_BUMPER = BP.PORT_3
+LEFT_BUMPER = BP.PORT_4
 RIGHT_BUMPER = BP.PORT_2
 BUMP_CHECK_TRIES = 10
 BUMP_BACKUP_DISTANCE_CM = 10
@@ -71,6 +71,9 @@ def _set_limit_at(left_percentage, right_percentage):
   BP.set_motor_limits(LEFT_WHEEL, left_percentage)
   BP.set_motor_limits(RIGHT_WHEEL, right_percentage)
 
+def set_limit_at(percentage):
+  _set_limit_at(percentage, percentage)
+
 def set_sensors():
   _set_sensors()
 
@@ -94,7 +97,7 @@ def _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_enco
 
   return max(abs(right_stop - right), abs(left_stop - left)) / abs(delta_encoder)
 
-def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = lambda x: False):
+def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = lambda: False):
   # -1 factor because big wheels at the front!
   delta_encoder = (-1.0) * scaling * mm
   left_delta_encoder = -delta_encoder if turn else delta_encoder
@@ -118,10 +121,9 @@ def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = l
         break
 
     if bump_check:
-        print(bump_check)
         bump_status = check_bump_bool()
         if bump_status:
-          print('wtf')
+          print('BUMP DETECTED')
           BP.set_motor_dps(LEFT_WHEEL, 0)
           BP.set_motor_dps(RIGHT_WHEEL, 0)
           bump_restore_and_rotate()
@@ -167,7 +169,7 @@ def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = l
   BP.set_motor_dps(RIGHT_WHEEL, 0)
 
 def move(mm, delta_fun = lambda x: x, check_bumps = False,
-         check_stopping_condition = lambda x: False):
+         check_stopping_condition = lambda: False):
   _move(ScalingFactors.movement, mm, False, delta_fun, check_bumps, check_stopping_condition)
 
 def move_cm(cm, delta_fun = lambda x: x):

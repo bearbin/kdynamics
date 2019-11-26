@@ -19,18 +19,12 @@ INITIAL_X = INITIAL_POSITION[0]
 INITIAL_Y = INITIAL_POSITION[1]
 INITIAL_ANGLE = 0.0
 
-
 MIN_READING_DIFF = 10
 
 ROUTE_1_PREPARE_WAYPOINTS = []
 ROUTE_1_WAYPOINTS = []
 
 ########################## FUNCTIONS ############################
-
-def stop_check_():
-    sonar_reading_cm = common.get_sonar_cm()
-
-
 
 def ROBOT_do_route_looking_for_bottle_1():
     ROBOT_do_waypoints(ROUTE_1_PREPARE_WAYPOINTS)
@@ -44,9 +38,16 @@ def ROBOT_do_route_looking_for_bottle_1():
     return
 
 
+def ROBOT_do_wall_folowing_approach():
+    ROBOT_do_route_looking_for_bottle_1()
+
+
+def ROBOT_do_seek_and_destroy_approach():
+    ROBOT_do_route_looking_for_bottle_1()
+
 ######################## EXECUTING CODE ##########################
 
 drawWorld()
 ROBOT_initialize_waypoint_state(INITIAL_X, INITIAL_Y, INITIAL_ANGLE)
 
-ROBOT_do_route_looking_for_bottle_1()
+

@@ -82,13 +82,11 @@ def mcl_redraw():
     drawParticlesStateful(points)
 
 
-def navigate_to_waypoint_cm(target_x_cm, target_y_cm)
+def navigate_to_waypoint_cm(target_x_cm, target_y_cm):
     global x_cm, y_cm, angle_radians, points
     DEBUG_print_current_state_deg(x_cm, y_cm, angle_radians)
 
-    (delta_angle_degrees, distance_to_travel_cm)
-      = compute_delta_angle_and_distance(x_cm, y_cm, target_x_cm, target_y_cm)
-    
+    (delta_angle_degrees, distance_to_travel_cm) = compute_delta_angle_and_distance(x_cm, y_cm, target_x_cm, target_y_cm)
     if (distance_to_travel_cm == 0):
         return
 
