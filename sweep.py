@@ -3,13 +3,13 @@
 import time
 from common import *
 from waypoint import *
-from mcl import get_expected_signature
+from mcl import get_expected_signature, get_anomalous_angle_rotation_degrees
 from math import radians
 from debug import *
 
 SONAR_ROTATION_WAIT = 0.6
 SONAR_ROTATION_WAIT_SMALL = 0.1
-SWEEP_STEP_DEGREES = 5
+SWEEP_STEP_DEGREES = 1
 
 class SweepData:
     class A:
@@ -17,7 +17,7 @@ class SweepData:
     class B:
         SWEEP_ANGLE = 45
     class C:
-        SWEEP_ANGLE = 90
+        SWEEP_ANGLE = 30
 
 
 ########################## FUNCTIONS ############################
@@ -58,7 +58,7 @@ def SONAR_perform_sweep_and_get_readings(sweep_angle_degrees):
     for angle_degrees in range(sweep_steps_num):
         SONAR_record_into(readings)
         SONAR_rotate_left_degrees(-SWEEP_STEP_DEGREES)
-    SONAR_record_into(readings)
+#     SONAR_record_into(readings)
 
     return readings
 
@@ -74,8 +74,9 @@ def find_bottle_angle(actual_sonar_readings, sweep_data):
 
     print(estimated_ideal_sonar_readings)
 
-    # TODO: Diff algorithm
-    return 0
+    return get_anomalous_angle_rotation_degrees(
+            estimated_ideal_sonar_readings, actual_sonar_readings, -sweep_data.SWEEP_ANGLE, SWEEP_STEP_DEGREES
+    )
 
 
 def SONAR_perform_sweep_and_get_target_angle_radians(sweep_data):
@@ -87,7 +88,7 @@ def SONAR_perform_sweep_and_get_target_angle_radians(sweep_data):
 
   DEBUG_print_sonar_readings(sonar_sweep_readings)
 
-  return find_bottle_angle(sonar_sweep_readings, sweep_data)
+  return radians(find_bottle_angle(sonar_sweep_readings, sweep_data))
 
 
 def SONAR_find_angle_to_rotate_to_target_radians(waypoint_id):

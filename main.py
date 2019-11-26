@@ -29,8 +29,8 @@ MAX_DESTROY_ADVANCE_CM = 1000
 
 class Waypoints:
     class Path1:
-        SEEK = [[84, 25]]
-        # SEEK = [[42, 34], [42, 50]]
+        # SEEK = [[84, 25]]
+        SEEK = [[42, 30], [42, 90]]
         RETALIATE = [INITIAL_POSITION]
         WAYPOINT_ID = 'c'
     class Path2:

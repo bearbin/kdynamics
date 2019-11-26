@@ -68,11 +68,25 @@ def get_expected_signature(x_cm, y_cm, theta_rad, min_deg, max_deg, step_deg):
   angles = range(min_deg, max_deg, step_deg)
   return [(a, find_closest_wall(x_cm, y_cm, theta_rad + radians(a))[1]) for a in angles]
 
-def get_anomalous_reading(expected_signature, actual_signature):
+ANOMALY_THRESHOLD = 19
+
+def get_anomalous_reading_index(expected_signature, actual_signature):
   # TODO: Ensure surrounding values are also similarly offset.
+  print(len(expected_signature), len(actual_signature))
   assert(len(expected_signature) == len(actual_signature))
-  deviations = tuple(map(
-    lambda sigs: abs(sigs[0][1] - sigs[1][1]),
-    zip(expected_signature, actual_signature)
-  ))
-  return actual_signature[deviations.index(max(deviations))]
+
+  anomalies = []
+  for i in range(len(expected_signature)):
+      if expected_signature[i][1] - actual_signature[i] > ANOMALY_THRESHOLD:
+          anomalies.append(i)
+  anomalies.sort()
+  return anomalies[math.floor(len(anomalies) / 2)]
+  #deviations = tuple(map(
+      # lambda sigs: abs(sigs[0][1] - sigs[1][1]),
+    # zip(expected_signature, actual_signature)
+    #))
+  # return actual_signature[deviations.index(max(deviations))]
+
+def get_anomalous_angle_rotation_degrees(expected_signature, actual_signature, start_angle, angle_step):
+    anomaly_index = get_anomalous_reading_index(expected_signature, actual_signature)
+    return start_angle + angle_step * anomaly_index
