@@ -29,19 +29,17 @@ MAX_DESTROY_ADVANCE_CM = 1000
 
 class Waypoints:
     class Path1:
-        SEEK = [[42, 34], [42, 50]]
+        SEEK = [[84, 25]]
+        # SEEK = [[42, 34], [42, 50]]
         RETALIATE = [INITIAL_POSITION]
-        SONAR_ANGLE = 90
         WAYPOINT_ID = 'c'
     class Path2:
         SEEK = [[90, 70]]
         RETALIATE = [INITIAL_POSITION]
-        SONAR_ANGLE = 180
         WAYPOINT_ID = 'b'
     class Path3:
         SEEK = [[90, 30]]
         RETALIATE = [INITIAL_POSITION]
-        SONAR_ANGLE = 180
         WAYPOINT_ID = 'a'
 
 ########################## FUNCTIONS ############################
