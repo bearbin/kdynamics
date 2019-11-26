@@ -17,7 +17,7 @@ class SweepData:
     class B:
         SWEEP_ANGLE = 45
     class C:
-        SWEEP_ANGLE = 45
+        SWEEP_ANGLE = 90
 
 
 ########################## FUNCTIONS ############################
@@ -30,7 +30,7 @@ def measure_sonar():
 
 
 def correct_sonar_turn(turn):
-    return turn * 11 / 7.5
+    return turn
 
 
 BP.set_motor_limits(PORT_A, 25)

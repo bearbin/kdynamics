@@ -22,6 +22,7 @@ BUMP_BACKUP_DISTANCE_CM = 10
 SONAR_DELTA = 4
 
 SENSOR_RESET_SLEEP = 0.1
+curr_sonar_angle = None
 
 class BumpStatus(Enum):
   NONE = 0
@@ -242,8 +243,11 @@ def get_sonar_mm():
   return get_sonar_cm() * 10
 
 def turn_sonar_left(degrees):
-  curr_angle = get_motor_position(SONAR_MOTOR)
-  BP.set_motor_position(SONAR_MOTOR, curr_angle + degrees)
+  global curr_sonar_angle
+  if curr_sonar_angle is None:
+    curr_sonar_angle = get_motor_position(SONAR_MOTOR)
+  curr_sonar_angle = curr_sonar_angle + degrees
+  BP.set_motor_position(SONAR_MOTOR, curr_sonar_angle)
 
 
 ##### BUMPING #####
