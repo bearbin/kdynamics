@@ -10,11 +10,11 @@ scan_waypoint_a = (0.90, 0.30)
 scan_waypoint_b = (0.90, 0.70)
 scan_waypoint_c = (0.42, 0.30)
 
-# Sigs are: (start angle, dists at 5 degree intervals)
+# Sigs are: (start angle, end_angle, dists at 5 degree intervals)
 
-bottleless_a = []
+bottleless_a = (45, -45, [])
 
-bottleless_b = []
+bottleless_b = (100, 0, [])
 
 # TODO: write specific waypoint
 c_signature = (180, 0, [51, 51, 51, 51, 51, 51, 52, 53, 53, 53, 53, 53, 54, 55, 97, 96, 95, 94, 93, 93, 93, 92, 92, 92, 92, 92, 92, 93, 93, 93, 94, 100, 100, 99, 100, 101, 102, 103, 166, 164, 164, 163, 163, 162, 162])
@@ -68,6 +68,11 @@ def find_bottle(sonar_angle, signature):
 
   return bottle_pos
 
-(bottle_angle, bottle_dist) = find_bottle(bottleless_c)
-turn_left(-bottle_angle)    # TODO: check relative
-move_cm(bottle_dist)        # TODO: until bump
+# waypoint_id is 'a', 'b' or 'c'
+def find_angle_rotation_robot_left(curr_sonar_angle, waypoint_id):
+    assert(waypoint == 'a' or waypoint == 'b' or waypoint == 'c')
+
+    signature = bottleless_a if waypoint_id == 'a' else (bottleless_b if waypoint_id == 'b' else bottleless_c)
+
+    return find_bottle(curr_sonar_angle, signature)[0]
+
