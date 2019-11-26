@@ -51,10 +51,26 @@ def ROBOT_rotate_left(delta_angle_degrees):
     points.rotate_degrees_left(delta_angle_degrees)
 
 
+def ROBOT_rotate_left_radians(delta_angle_radians):
+    ROBOT_rotate_left(degrees(delta_angle_radians))
+
+
 def ROBOT_move_forward(delta_cm):
     global points
     #common.move_cm(distance, lambda delta: (points.move(delta), points.fuse_sonar(common.get_sonar_cm()), drawParticles(points)))
     common.move_cm(delta_cm)
+    points.move(delta_cm)
+
+
+def ROBOT_move_forward_with_bump_check(delta_cm):
+    common.move_cm_check_bumps(delta_cm)
+    #
+    #
+    #
+    # TODO: BUMPING MCL
+    #
+    #
+    #
     points.move(delta_cm)
 
 

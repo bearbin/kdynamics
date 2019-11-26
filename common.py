@@ -178,6 +178,9 @@ def move_cm(cm, delta_fun = lambda x: x):
 def move_cm_check_bumps(cm, delta_fun = lambda x: x):
   move(cm * 10, delta_fun, True)
 
+def move_cm_check_bumps(cm, delta_fun = lambda x: x):
+  move(cm * 10, delta_fun, True)
+
 def move_cm_check_bumps_and_condition(cm, check_stopping_condition, delta_fun = lambda x: x):
   move(cm * 10, delta_fun, True, check_stopping_condition)
 
@@ -218,6 +221,10 @@ def _turn_left(degrees):
     #print(abs(get_motor_position(RIGHT_WHEEL) - final_right))
     continue
   print("Turn complete")
+
+
+def turn_left_radians(angle_radians):
+    turn_left(math.degrees(angle_radians))
 
 
 ##### SONAR #####
