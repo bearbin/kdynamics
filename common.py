@@ -287,7 +287,6 @@ def normalise_rads(angle):
   return math.atan2(math.sin(angle), math.cos(angle))
 
 
-
 ORIGINAL_WAYPOINTS = [
 [84,30],
 
@@ -333,3 +332,9 @@ ORIGINAL_WAYPOINTS = [
 
 [84,30]
 ]
+
+
+# Metres
+scan_waypoint_a = (0.90, 0.30)
+scan_waypoint_b = (0.90, 0.70)
+scan_waypoint_c = (0.42, 0.30)
