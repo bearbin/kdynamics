@@ -7,9 +7,9 @@ import mcl
 from localisation import PointCloud
 from rendering import *
 from math import atan2, cos, sin, degrees, radians, sqrt, hypot, pi
+from debug import *
 
-
-WAIT_AFTER_MOVE_TIME = 0.5
+WAIT_AFTER_MOVE_TIME = 0.3
 USING_MCL = True
 
 
@@ -23,14 +23,14 @@ def compute_clamped_delta(target_angle_radians, current_angle_radians):
 
 
 def compute_target_angle_radians(delta_x, delta_y):
-    return atan2(delta_y, delta_x) 
+    return atan2(delta_y, delta_x)
 
 
 def wait():
     time.sleep(WAIT_AFTER_MOVE_TIME)
 
 
-def compute_delta_angle_and_distance(cur_x_cm, cur_y_cm, target_x_cm, target_y_cm):
+def compute_delta_angle_and_distance(cur_x_cm, cur_y_cm, target_x_cm, target_y_cm, current_angle_radians):
     delta_y_cm = target_y_cm - cur_y_cm
     delta_x_cm = target_x_cm - cur_x_cm
 
@@ -63,7 +63,9 @@ def ROBOT_move_forward(delta_cm):
 
 
 def ROBOT_move_forward_with_bump_check(delta_cm):
-    common.move_cm_check_bumps(delta_cm)
+    global points
+    distance_moved_cm = common.move_cm_check_bumps(delta_cm)
+    print("MOVED", distance_moved_cm)
     #
     #
     #
@@ -71,7 +73,10 @@ def ROBOT_move_forward_with_bump_check(delta_cm):
     #
     #
     #
-    points.move(delta_cm)
+    points.move(distance_moved_cm)
+    points.rotate_degrees_left(180)
+    ROBOT_update_estimated_position_using_mcl_and_sonar()
+
 
 
 def ROBOT_set_estimated_position(new_x_cm, new_y_cm, new_angle_radians):
@@ -100,9 +105,9 @@ def mcl_redraw():
 
 def navigate_to_waypoint_cm(target_x_cm, target_y_cm):
     global x_cm, y_cm, angle_radians, points
-    DEBUG_print_current_state_deg(x_cm, y_cm, angle_radians)
+    DEBUG_print_current_state_rad(x_cm, y_cm, angle_radians)
 
-    (delta_angle_degrees, distance_to_travel_cm) = compute_delta_angle_and_distance(x_cm, y_cm, target_x_cm, target_y_cm)
+    (delta_angle_degrees, distance_to_travel_cm) = compute_delta_angle_and_distance(x_cm, y_cm, target_x_cm, target_y_cm, angle_radians)
     if (distance_to_travel_cm == 0):
         return
 

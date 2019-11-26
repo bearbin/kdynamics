@@ -23,6 +23,9 @@ LEFT_BUMPER = BP.PORT_4
 RIGHT_BUMPER = BP.PORT_2
 BUMP_CHECK_TRIES = 10
 BUMP_BACKUP_DISTANCE_CM = 10
+SONAR_DELTA = 4
+
+SENSOR_RESET_SLEEP = 0.1
 
 class BumpStatus(Enum):
   NONE = 0
@@ -77,16 +80,19 @@ def set_limit_at(percentage):
 def set_sensors():
   _set_sensors()
 
+def _sonar_reset_sleep():
+  time.sleep(SENSOR_RESET_SLEEP)
+
 def _set_sensors():
   BP.set_sensor_type(BP.PORT_1 + BP.PORT_2 + BP.PORT_3 + BP.PORT_4, BP.SENSOR_TYPE.NONE)
-  time.sleep(0.3)
+  _sonar_reset_sleep()
 
   BP.set_sensor_type(SONAR_PORT, BP.SENSOR_TYPE.NXT_ULTRASONIC)
-  time.sleep(0.3)
+  _sonar_reset_sleep()
 
   for bumper in [LEFT_BUMPER, RIGHT_BUMPER]:
     BP.set_sensor_type(bumper, BP.SENSOR_TYPE.TOUCH)
-    time.sleep(0.3)
+    _sonar_reset_sleep()
 
 
 ##### MOVEMENT #####
@@ -94,7 +100,6 @@ def _set_sensors():
 def _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_encoder):
   if abs(delta_encoder) < 0.1:
     return 0
-
   return max(abs(right_stop - right), abs(left_stop - left)) / abs(delta_encoder)
 
 def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = lambda: False):
@@ -116,9 +121,14 @@ def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = l
   left_stop = abs(left_stop_threshold)
   right_stop = abs(right_stop_threshold)
 
+  initial_left = abs(get_motor_position(LEFT_WHEEL))
+
   while True:
     if check_stopping_condition():
         break
+
+    left = abs(get_motor_position(LEFT_WHEEL))
+    right = abs(get_motor_position(RIGHT_WHEEL))
 
     if bump_check:
         bump_status = check_bump_bool()
@@ -127,9 +137,7 @@ def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = l
           BP.set_motor_dps(LEFT_WHEEL, 0)
           BP.set_motor_dps(RIGHT_WHEEL, 0)
           bump_restore_and_rotate()
-          break
-    left = abs(get_motor_position(LEFT_WHEEL))
-    right = abs(get_motor_position(RIGHT_WHEEL))
+          return (left - initial_left) / scaling / 10 - BUMP_BACKUP_DISTANCE_CM
 
     prev_difference = difference
     difference = _compute_percentage_yet_to_go(left_stop, left, right_stop, right, delta_encoder)
@@ -159,8 +167,6 @@ def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = l
       limit = max_power
 
     limit = 25
-    #print(limit)
-    #print(difference)
 
     _set_limit_at(limit, limit + right_limit_adjust)
     time.sleep(0.01)
@@ -170,16 +176,13 @@ def _move(scaling, mm, turn, delta_fun, bump_check, check_stopping_condition = l
 
 def move(mm, delta_fun = lambda x: x, check_bumps = False,
          check_stopping_condition = lambda: False):
-  _move(ScalingFactors.movement, mm, False, delta_fun, check_bumps, check_stopping_condition)
+  return _move(ScalingFactors.movement, mm, False, delta_fun, check_bumps, check_stopping_condition)
 
 def move_cm(cm, delta_fun = lambda x: x):
   move(cm * 10, delta_fun)
 
 def move_cm_check_bumps(cm, delta_fun = lambda x: x):
-  move(cm * 10, delta_fun, True)
-
-def move_cm_check_bumps(cm, delta_fun = lambda x: x):
-  move(cm * 10, delta_fun, True)
+  return move(cm * 10, delta_fun, True)
 
 def move_cm_check_bumps_and_condition(cm, check_stopping_condition, delta_fun = lambda x: x):
   move(cm * 10, delta_fun, True, check_stopping_condition)
@@ -232,7 +235,7 @@ def turn_left_radians(angle_radians):
 def get_sonar_cm():
   while True:
     try:
-      measurements = [BP.get_sensor(SONAR_PORT) + 4 for i in range(5)]
+      measurements = [BP.get_sensor(SONAR_PORT) + SONAR_DELTA for i in range(5)]
       measurements.sort()
       return measurements[2] # Return the median distance
     except (IOError, brickpi3.SensorError):
@@ -281,7 +284,7 @@ def bump_restore_and_rotate():
 ##### MISC #####
 
 def normalise_rads(angle):
-  return atan2(sin(angle), cos(angle))
+  return math.atan2(math.sin(angle), math.cos(angle))
 
 
 

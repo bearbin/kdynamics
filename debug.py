@@ -16,7 +16,7 @@ def DEBUG_print_target_state_rad(target_x_cm, target_y_cm, target_angle_rad):
     print()
     print("/// TARGET POSITION")
     print("Target X and Y = ", target_x_cm, target_y_cm)
-    print("Final absolute angle I need to get to = ", angle_description(target_angle))
+    print("Final absolute angle I need to get to = ", angle_description(target_angle_rad))
 
 
 def DEBUG_print_delta_state_rad(delta_x_cm, delta_y_cm, delta_angle_rad):
