@@ -8,6 +8,7 @@ import time
 import common
 import mcl
 from waypoint import *
+from sweep import *
 
 from localisation import PointCloud
 from rendering import *
@@ -28,14 +29,20 @@ MAX_DESTROY_ADVANCE_CM = 1000
 
 class Waypoints:
     class Path1:
-        SEEK = [[40, 60]]
+        SEEK = [[42, 34], [42, 50]]
         RETALIATE = [INITIAL_POSITION]
+        SONAR_ANGLE = 90
+        WAYPOINT_ID = 'c'
     class Path2:
-        SEEK = [[100, 100]]
+        SEEK = [[90, 70]]
         RETALIATE = [INITIAL_POSITION]
+        SONAR_ANGLE = 180
+        WAYPOINT_ID = 'b'
     class Path3:
-        SEEK = [[120, 40]]
+        SEEK = [[90, 30]]
         RETALIATE = [INITIAL_POSITION]
+        SONAR_ANGLE = 180
+        WAYPOINT_ID = 'a'
 
 ########################## FUNCTIONS ############################
 
@@ -56,7 +63,7 @@ def ROBOT_do_wall_folowing_approach():
 
 ##################################################################
 
-def SONAR_locate_target():
+def SONAR_locate_target(waypoint_id):
     #
     #
     #
@@ -64,11 +71,11 @@ def SONAR_locate_target():
     #
     #
     #
-    return 0
+    return -find_angle_rotation_robot_left(waypoint_id)
 
 
-def ROBOT_seek_and_destroy():
-    left_rotation_angle_radians = SONAR_locate_target()
+def ROBOT_seek_and_destroy(path_info):
+    left_rotation_angle_radians = SONAR_locate_target(path_info.WAYPOINT_ID)
 
     ROBOT_rotate_left_radians(left_rotation_angle_radians)
     ROBOT_move_forward_with_bump_check(MAX_DESTROY_ADVANCE_CM)
@@ -79,7 +86,7 @@ def ROBOT_destroy(path_info):
     waypoints_to_retaliate = path_info.RETALIATE
 
     ROBOT_do_waypoints(waypoints_to_seek)
-    ROBOT_seek_and_destroy()
+    ROBOT_seek_and_destroy(path_info)
     ROBOT_do_waypoints(waypoints_to_retaliate)
 
 
